@@ -166,9 +166,15 @@ bool checkOptions(int i_argc, char **i_argv)
       else if (a == "--no-default-identity")
 	g_option_defaultIdentityFile = NULL;
       else if (a == "-a")
+      {
 	g_option_bindAddress = i_argv[++ i];
+	i_argv[i] = i_argv[i - 1] = NULL;
+      }
       else if (a == "-t")
+      {
 	g_option_lifetime = i_argv[++ i];
+	i_argv[i] = i_argv[i - 1] = NULL;
+      }
       else if (a == "-e" || a == "--exec")
       {
 	g_option_execArgs = &i_argv[++ i];
@@ -521,12 +527,13 @@ int main(int i_argc, char **i_argv)
   // 1. Executed by user (from Explorer etc.)
   else
   {
+    if (!checkOptions(i_argc, i_argv))
+      return 1;
+    
     const std::string selfPath(getSelfPath());
-    char **argv = new char *[i_argc + 7];
+    char **argv = new char *[i_argc + 3];
     char **argp = argv;
     *argp ++ = "ssh-agent";
-    *argp ++ = const_cast<char *>(selfPath.c_str());
-    *argp ++ = "--no-ssh-agent";
     if (g_option_bindAddress)
     {
       *argp ++ = "-a";
@@ -537,8 +544,11 @@ int main(int i_argc, char **i_argv)
       *argp ++ = "-t";
       *argp ++ = const_cast<char *>(g_option_lifetime);
     }
+    *argp ++ = const_cast<char *>(selfPath.c_str());
+    *argp ++ = "--no-ssh-agent";
     for (int i = 1; i <= i_argc; ++ i)
-      *argp ++ = i_argv[i];
+      if (i_argv[i])	// some options are removed in the checkOptions()
+	*argp ++ = i_argv[i];
     *argp ++ = NULL;
 #ifdef DEBUG_STDOUT
     printf("exec ");
