@@ -3,114 +3,126 @@
 		    win-ssh-agent, win-ssh-askpass
 
 
-1. はじめに
+1. Introduction
 
-	X を使用する場合、.xsession や .xinitrc で ssh-agent を起動し
-	ておけば、環境変数 SSH_AGENT_PID と SSH_AUTH_SOCK を全てのプロ
-	グラムが参照できるようになり、非常に便利です。
+	When using the ssh-agent with X, you can start the ssh-agent in
+	the .xsession or the .xinitrc.  Then all your programs are able
+	to refer to environment variables the SSH_AGENT_PID and the
+	SSH_AUTH_SOCK.  It must be very useful.
 
-	ところが Windows の cygwin の openssh を使用している時に同様の
-	動作をさせようとしてもなかなかうまくいきません。ssh を使用する
-	可能性のある全てのプログラムを ssh-agent を使用した bash 経由
-	で起動するなどの方法をとらねばなりません。
+	In the cygwin, however, it may be difficult to set up the
+	environment variables that can be referred to by all your
+	programs.  In such case, you need to start all relevant
+	programs, which might need to use the ssh, as child processes
+	of the shell (e.g. bash) in which you eval'ed the ssh-agent.
 
-	win-ssh-agent は、ssh-agent の環境変数 SSH_AGENT_PID と 
-	SSH_AUTH_SOCK を全てのプログラムが参照できるようにします。
+	The win-ssh-agent enables all programs to refer to the
+	environment variables of the ssh-agent, i.e. the SSH_AGENT_PID
+	and the SSH_AUTH_SOCK.
 
-	win-ssh-askpass は、X 用の ssh-askpass と同様の機能を提供しま
-	す。
+	The win-ssh-askpass can fulfill the same function of the
+	ssh-askpass for X.
 
-2. 動作
+	
+2. Behaviors
 
-	win-ssh-agent.exe は起動された後、内部で勝手に ssh-agent.exe 
-	を起動します。そして、以下の環境変数の設定をします。
+	After the win-ssh-agent started, it will make the ssh-agent
+	automatically start.  And then the below environment variables
+	will be set up.
 
-		SSH_AGENT_PID	ssh-agent.exe のプロセス ID。
-		SSH_AUTH_SOCK	ssh-agent.exe の認証用ソケットパス。
-		SSH_ASKPASS	win-ssh-askpass.exe のパス。
+		SSH_AGENT_PID	the process ID for ssh-agent.exe
+		SSH_AUTH_SOCK	the socket-path for ssh-agent.exe
+		SSH_ASKPASS	the path of win-ssh-askpass.exe
 		DISPLAY		localhost:0
 
-	(※DISPLAY 環境変数が設定される条件は、既に DISPLAY 環境変数が
-	設定されておらず、かつ win-ssh-agent.exe を起動する時に 
-	--no-DISPLAY オプションを指定しなかった場合のみです)
+	(The terms of set up the DISPLAY environment variable are that
+	the DISPLAY have not been set up and also then --no-DISPLAY
+	option was not set up at the command line of the
+	win-ssh-agent.)
 
-	これらの設定は Explorer に対して行われ、以後 Explorer 経由で起
-	動する全てのアプリケーションはこれらの環境変数を継承します。
+	Once this set up would be done, all application which will be
+	started through the Explorer will be able to refer to these
+	environment variables, because they are set up into the
+	Explorer.
 
-	win-ssh-agent.exe はタスクトレイに常駐し、終了時にこれらの環境
-	変数を削除します。
+	The win-ssh-agent stays in the task-tray and deletes each
+	environment variable at the end of its life.
+
 	
+	If the DISPLAY and the SSH_ASKPASS are correctly set up, the
+	ssh-add will start the win-ssh-askpass.  In this case the
+	pass-phrase will be required like the case of ssh-askpass for
+	X.
 
-	win-ssh-askpass.exe は、環境変数 DISPLAY と SSH_ASKPASS が適切
-	に設定されていると ssh-add.exe が win-ssh-askpass.exe を起動し
-	ます。この場合 X 用の ssh-askpass と同様に、パスフレーズを入力
-	するように促されます。
+
+	Because the win-ssh-askpass uses the tool of the openssh
+	inside, the PATH environment variable must have /bin of the
+	cygwin.  You need to use the openssh 3.4p1-5 or the later.  It
+	is not known whether it can work properly with the previous
+	version.
+
 	
-
-	openssh のツールを内部で使用するため、cygwin の /bin へパスが
-	とおっている必要があります。cygwin の openssh の 3.4p1-5 以降
-	を使用してください。それ以前のバージョンでも動作するかもしれま
-	せんが、わかりません。
-
-
-3. win-ssh-agent のオプション
+3. Options of the win-ssh-agent
 
 	--no-ssh-agent
 
-		通常は、win-ssh-agent は起動された後、内部で勝手に 
-		ssh-agent を起動しますが、起動しないようにします。
+		It stops to start the ssh-agent.  Without this option,
+		the ssh-agent is automatically started.
 
 	--no-DISPLAY
 
-		DISPLAY 環境変数を win-ssh-agent が勝手に設定しない
-		ようにします。(2. (a) 参照)
+		It stops that the win-ssh-agent sets up automatically
+		the DISPLAY environment variable.  (see section 2)
 
 	--hide-console
 
-		win-ssh-agent が属しているコンソールウィンドウを隠しま
-		す。win-ssh-agent が終了すると、再び表示されます。
+		It hides the console-window belonging to
+		win-ssh-agent.  It will appear again when the
+		win-ssh-agent was closed.
 
 	-i, --identity FILENAME
 
-		複数の identity ファイルを使用する場合、このオプション
-		で identity ファイルを指定します。このオプションは複数
-		指定可能です。
+		In case using more than one identity file, the
+		identity file will be specified by this option.  This
+		option can be specified more more than once.
 
 	-I, --default-identity FILENAME
 
-		-i と同じですが、win-ssh-agent 起動時にパスフレーズ
-		を問い合わせるダイアログを表示します。このオプションは
-		一つしか指定できません。
+		This option works almost as same as -i.  But, it shows
+		a dialogue which asks the pass-phrase at the time of
+		start.  This option can be specified only once.
 
-		デフォルトでは -I - が暗黙に指定されています。FILENAME 
-		として - を指定すると、ssh-add を引数なしで実行した場
-		合と同じファイル (~/.ssh/id_rsa, ~/.ssh/id_dsa
-		~/.ssh/identity) を指定したことになります。
+		In the case of default, -I- is set up automatically.
+		If - is specified as a FILENAME, the same identity
+		files are considerd to be specified as the ssh-add
+		with no-options uses.  (i.e. ~/.ssh/id_rsa,
+		~/.ssh/id_dsa, ~/.ssh/identity)
 
 	--no-default-identity
 
-		デフォルトで -I - が指定されないようにします。
+		It stops that -I- is set in the case of default.
 
 	-e, --exec PROGRAM [OPTION ...]
 
-		このオプション以降に書いたプログラムを win-ssh-agent 
-		起動後に実行します。-I が指定されていた場合は、ダイア
-		ログが閉じてから実行しますが、パスフレーズ入力がキャン
-		セルされた場合は実行しません。
+		After the win-ssh-agent started, it executes the
+		PROGRAM.  If the -I option is specified, it is
+		executed after closing the pass-phrase dialogue.  In
+		the case the pass-phrase dialogue was cancelled, it
+		will not be executed.
 
 
-4. コンパイル・インストール
+4. Compile and Install
 
-	cygwin がインストールされた状態で make してください。バイナリ
-	は提供しません。
+	Please do make.  Binary executables can not be offered.
 
-	win-ssh-agent.exe と win-ssh-askpass.exe は同じディレクトリに
-	置いてください。
+	The win-ssh-agent.exe and the win-ssh-askpass.exe should be in
+	the same directory.
 
-	ssh-agent.exe と ssh-add.exe にパスが通っている必要があります。
+	The ssh-agent.exe and ssh-add.exe must be found in the path of
+	the PATH.
 
 
-5. サポート
+5. Support 
 
 	http://www.ganaware.jp/S/win-ssh-askpass/
 
@@ -153,29 +165,28 @@
 	ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-7. 履歴
+7. History
 
 	2002/09/22 1.04
-		* win-ssh-agent と win-ssh-askpass を分離。
-		* -I - がデフォルトで指定されるように変更。
-		* --hide-console を追加。
-		* sample.bat を廃止。
+		* I separated the win-ssh-agent and the win-ssh-askpass.
+		* I made a change, so that "-I-" will be specified in default.
+		* --hide-console is added.
+		* sample.bat was cancelled.
 
 	2002/02/27 1.03
-		* -I と -e を同時に指定した場合、パスフレーズを問い合
-		  わせるダイアログをキャンセルすると -e は実行されない
-		  ようにした。(Patched by 外山純生)
-		* sample.bat を付属。
+		* Now, -e will not be executed when you cancelled the
+                  pass-phrase dialogue in the case -I and -e were
+                  simultaneously specified. (Patched by Sumio TOYAMA)
+		* sample.bat was added.
 
 	2001/12/09 1.02
-		* 複数の identity ファイルを使用可能にした。
-		* win-ssh-askpass 実行時にパスフレーズ問い合わせダイア
-		  ログが開くようにできるようにした。
-		* win-ssh-askpass 実行後に起動するアプリケーションを指
-		  定できるようにした。
+		* More than one identity files can be specified.
+		* The pass-phrase dialogue may open at the beginning.
+		* A program can be executed after the start of the
+                  win-ssh-askpass.
 
 	2001/11/10 1.01
-		* make した時にリンクワーニングが出ないようにした。
-		
+		* The link-warning were vanished when make.
+
 	2001/11/04 1.00
-		* 作った。
+		* I made it.
