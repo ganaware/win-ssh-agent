@@ -110,16 +110,30 @@
 		the case the pass-phrase dialogue was cancelled, it
 		will not be executed.
 
+	-a BIND_ADDRESS
+
+		Bind the agent to the unix-domain socket bind_address.  The
+		default is /tmp/ssh-XXXXXXXX/agent.<ppid>.
+
+	-t LIFE
+
+		Set a default value for the maximum lifetime of identities
+		added to the agent.  The lifetime may be specified in seconds
+		or in a time format specified in sshd(8).  A lifetime
+		specified for an identity with ssh-add(1) overrides this
+		value.  Without this option the default maximum lifetime is
+		forever.
+
 
 4. Compile and Install
-
-	Please do make.  Binary executables can not be offered.
 
 	The win-ssh-agent.exe and the win-ssh-askpass.exe should be in
 	the same directory.
 
 	The ssh-agent.exe and ssh-add.exe must be found in the path of
 	the PATH.
+
+	If you want to re-compile, please do make.
 
 
 5. Support 
@@ -167,9 +181,12 @@
 
 7. History
 
-	2004/01/xx 1.05
+	2004/02/xx 1.05
 		* Now, win-ssh-agent set up an environment variable
                   DISPLAY to :0 instead of localhost:0.
+		* Thanks to Ralf Hauser and Naoko, README written in
+		  English is available.
+		* -a and -t are added.
 
 	2002/09/22 1.04
 		* I separated the win-ssh-agent and the win-ssh-askpass.

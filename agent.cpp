@@ -19,7 +19,9 @@
 typedef std::list<const char *> IdentityFiles;
 
 static IdentityFiles g_option_identityFiles; // --identity, --default-identity
-static  const char *g_option_defaultIdentityFile = ""; // --default-identity
+static const char *g_option_defaultIdentityFile = ""; // --default-identity
+static const char *g_option_bindAddress = NULL;	// -a
+static const char *g_option_lifetime = NULL;	// -t
 static bool g_option_DISPLAY = true;		// --DISPLAY, --no-DISPLAY
 static char **g_option_execArgs = NULL;		// --exec
 static bool g_option_hideConsole = false;	// --hide-console
@@ -62,7 +64,7 @@ int run_ssh_add(const char *i_identityFile)
   {
     close(0);
     setenv("DISPLAY", ":0", 0);
-    verbose("export DISPLAY=localhost:0\n");
+    verbose("export DISPLAY=:0\n");
     verbose("exec ssh-add %s\n", i_identityFile ? i_identityFile : "");
     if (i_identityFile && !i_identityFile[0])
       i_identityFile = NULL;
@@ -163,6 +165,10 @@ bool checkOptions(int i_argc, char **i_argv)
       }
       else if (a == "--no-default-identity")
 	g_option_defaultIdentityFile = NULL;
+      else if (a == "-a")
+	g_option_bindAddress = i_argv[++ i];
+      else if (a == "-t")
+	g_option_lifetime = i_argv[++ i];
       else if (a == "-e" || a == "--exec")
       {
 	g_option_execArgs = &i_argv[++ i];
@@ -469,9 +475,8 @@ int main(int i_argc, char **i_argv)
     verbose("export SSH_ASKPASS=%s\n", askpassPath.c_str());
     if (!hasDISPLAY && g_option_DISPLAY)
     {
-      writeRegistry(HKEY_CURRENT_USER, "Environment", "DISPLAY",
-		    "localhost:0");
-      verbose("export DISPLAY=localhost:0\n");
+      writeRegistry(HKEY_CURRENT_USER, "Environment", "DISPLAY", ":0");
+      verbose("export DISPLAY=:0\n");
     }
       
     DWORD returnValue;
@@ -517,12 +522,24 @@ int main(int i_argc, char **i_argv)
   else
   {
     const std::string selfPath(getSelfPath());
-    char **argv = new char *[i_argc + 3];
-    argv[0] = "ssh-agent";
-    argv[1] = const_cast<char *>(selfPath.c_str());
-    argv[2] = "--no-ssh-agent";
+    char **argv = new char *[i_argc + 7];
+    char **argp = argv;
+    *argp ++ = "ssh-agent";
+    *argp ++ = const_cast<char *>(selfPath.c_str());
+    *argp ++ = "--no-ssh-agent";
+    if (g_option_bindAddress)
+    {
+      *argp ++ = "-a";
+      *argp ++ = const_cast<char *>(g_option_bindAddress);
+    }
+    if (g_option_lifetime)
+    {
+      *argp ++ = "-t";
+      *argp ++ = const_cast<char *>(g_option_lifetime);
+    }
     for (int i = 1; i <= i_argc; ++ i)
-      argv[i + 2] = i_argv[i];
+      *argp ++ = i_argv[i];
+    *argp ++ = NULL;
 #ifdef DEBUG_STDOUT
     printf("exec ");
     for (int i = 0; argv[i]; ++ i)

@@ -98,16 +98,30 @@
 		ログが閉じてから実行しますが、パスフレーズ入力がキャン
 		セルされた場合は実行しません。
 
+	-a BIND_ADDRESS
+
+		Bind the agent to the unix-domain socket bind_address.  The
+		default is /tmp/ssh-XXXXXXXX/agent.<ppid>.
+
+	-t LIFE
+
+		Set a default value for the maximum lifetime of identities
+		added to the agent.  The lifetime may be specified in seconds
+		or in a time format specified in sshd(8).  A lifetime
+		specified for an identity with ssh-add(1) overrides this
+		value.  Without this option the default maximum lifetime is
+		forever.
+
 
 4. コンパイル・インストール
-
-	cygwin がインストールされた状態で make してください。バイナリ
-	は提供しません。
 
 	win-ssh-agent.exe と win-ssh-askpass.exe は同じディレクトリに
 	置いてください。
 
 	ssh-agent.exe と ssh-add.exe にパスが通っている必要があります。
+
+	自分で make する場合は、cygwin がインストールされた状態で make
+	してください。
 
 
 5. サポート
@@ -155,9 +169,11 @@
 
 7. 履歴
 
-	2004/01/xx 1.05
+	2004/02/xx 1.05
 		* DISPLAY 環境変数に設定する値を :0 にした。(以前は 
                   localhost:0 だった)
+		* 英語 README の添付。(Thanks to Ralf Hauser and Naoko)
+		* -a と -t オプションの追加。
 
 	2002/09/22 1.04
 		* win-ssh-agent と win-ssh-askpass を分離。
