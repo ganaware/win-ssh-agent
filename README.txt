@@ -1,6 +1,6 @@
 
 
-			   win-ssh-askpass
+		    win-ssh-agent, win-ssh-askpass
 
 
 1. はじめに
@@ -14,71 +14,61 @@
 	可能性のある全てのプログラムを ssh-agent を使用した bash 経由
 	で起動するなどの方法をとらねばなりません。
 
-	win-ssh-askpass は、
+	win-ssh-agent は、ssh-agent の環境変数 SSH_AGENT_PID と 
+	SSH_AUTH_SOCK を全てのプログラムが参照できるようにします。
 
-	(a) ssh-agent の環境変数 SSH_AGENT_PID と SSH_AUTH_SOCK を全て
-	    のプログラムが参照できるようにする。
-	(b) X 用の ssh-askpass と同様の機能を提供する。
+	win-ssh-askpass は、X 用の ssh-askpass と同様の機能を提供しま
+	す。
 
-	ということをします。
+2. 動作
 
+	win-ssh-agent.exe は起動された後、内部で勝手に ssh-agent.exe 
+	を起動します。そして、以下の環境変数の設定をします。
 
-2. 使い方
+		SSH_AGENT_PID	ssh-agent.exe のプロセス ID。
+		SSH_AUTH_SOCK	ssh-agent.exe の認証用ソケットパス。
+		SSH_ASKPASS	win-ssh-askpass.exe のパス。
+		DISPLAY		localhost:0
 
-	(a) スタートアップなどで win-ssh-askpass.exe を起動する場合。
+	(※DISPLAY 環境変数が設定される条件は、既に DISPLAY 環境変数が
+	設定されておらず、かつ win-ssh-agent.exe を起動する時に 
+	--no-DISPLAY オプションを指定しなかった場合のみです)
 
-		win-ssh-askpass.exe は起動された後、内部で勝手に 
-		ssh-agent.exe を起動します。そして、以下の環境変数の設
-		定をします。
+	これらの設定は Explorer に対して行われ、以後 Explorer 経由で起
+	動する全てのアプリケーションはこれらの環境変数を継承します。
 
-		  SSH_AGENT_PID	ssh-agent.exe のプロセス ID。
-		  SSH_AUTH_SOCK	ssh-agent.exe の認証用ソケットパス。
-		  SSH_ASKPASS	win-ssh-askpass.exe のパス。
-		  DISPLAY	localhost:0
+	win-ssh-agent.exe はタスクトレイに常駐し、終了時にこれらの環境
+	変数を削除します。
+	
 
-		(※DISPLAY 環境変数が設定される条件は、既に DISPLAY 環
-		境変数が設定されておらず、かつ win-ssh-askpass.exe を
-		起動する時に --no-DISPLAY オプションを指定しなかった場
-		合のみです)
-
-		これらの設定は Explorer に対して行われ、以後 Explorer 
-		経由で起動する全てのアプリケーションはこれらの環境変数
-		を継承します。
-
-		win-ssh-askpass.exe はタスクトレイに常駐し、終了時にこ
-		れらの環境変数を削除します。
-
-		※※※※※※※※※※※※※※※※※※※※※※※※※※※
-		最近の cygwin の openssh を使用した場合、スタートアッ
-		プなどで win-ssh-askpass.exe へのショートカットを作成
-		して、それを起動してもうまく動かないようです。代わりに 
-		sample.bat のようなバッチファイルへのショートカットを
-		作成して起動するとうまくいきます。ポイントは start /b 
-		です。
-		※※※※※※※※※※※※※※※※※※※※※※※※※※※
-
-	(b) ssh-add.exe 経由で起動される場合。
-
-		この場合、環境変数 DISPLAY と SSH_ASKPASS が適切に設定
-		されていると ssh-add.exe が win-ssh-askpass.exe を起動
-		します。この場合 X 用の ssh-askpass と同様に、パスフレー
-		ズを入力するように促されます。
+	win-ssh-askpass.exe は、環境変数 DISPLAY と SSH_ASKPASS が適切
+	に設定されていると ssh-add.exe が win-ssh-askpass.exe を起動し
+	ます。この場合 X 用の ssh-askpass と同様に、パスフレーズを入力
+	するように促されます。
+	
 
 	openssh のツールを内部で使用するため、cygwin の /bin へパスが
-	とおっている必要があります。
+	とおっている必要があります。cygwin の openssh の 3.4p1-5 以降
+	を使用してください。それ以前のバージョンでも動作するかもしれま
+	せんが、わかりません。
 
 
-3. オプション
+3. win-ssh-agent のオプション
 
 	--no-ssh-agent
 
-		通常は、win-ssh-askpass は起動された後、内部で勝手に 
+		通常は、win-ssh-agent は起動された後、内部で勝手に 
 		ssh-agent を起動しますが、起動しないようにします。
 
 	--no-DISPLAY
 
-		DISPLAY 環境変数を win-ssh-askpass が勝手に設定しない
+		DISPLAY 環境変数を win-ssh-agent が勝手に設定しない
 		ようにします。(2. (a) 参照)
+
+	--hide-console
+
+		win-ssh-agent が属しているコンソールウィンドウを隠しま
+		す。win-ssh-agent が終了すると、再び表示されます。
 
 	-i, --identity FILENAME
 
@@ -88,13 +78,22 @@
 
 	-I, --default-identity FILENAME
 
-		-i と同じですが、win-ssh-askpass 起動時にパスフレーズ
+		-i と同じですが、win-ssh-agent 起動時にパスフレーズ
 		を問い合わせるダイアログを表示します。このオプションは
 		一つしか指定できません。
 
+		デフォルトでは -I - が暗黙に指定されています。FILENAME 
+		として - を指定すると、ssh-add を引数なしで実行した場
+		合と同じファイル (~/.ssh/id_rsa, ~/.ssh/id_dsa
+		~/.ssh/identity) を指定したことになります。
+
+	--no-default-identity
+
+		デフォルトで -I - が指定されないようにします。
+
 	-e, --exec PROGRAM [OPTION ...]
 
-		このオプション以降に書いたプログラムを win-ssh-askpass 
+		このオプション以降に書いたプログラムを win-ssh-agent 
 		起動後に実行します。-I が指定されていた場合は、ダイア
 		ログが閉じてから実行しますが、パスフレーズ入力がキャン
 		セルされた場合は実行しません。
@@ -104,6 +103,11 @@
 
 	cygwin がインストールされた状態で make してください。バイナリ
 	は提供しません。
+
+	win-ssh-agent.exe と win-ssh-askpass.exe は同じディレクトリに
+	置いてください。
+
+	ssh-agent.exe と ssh-add.exe にパスが通っている必要があります。
 
 
 5. サポート
@@ -150,6 +154,12 @@
 
 
 7. 履歴
+
+	2002/09/22 1.04
+		* win-ssh-agent と win-ssh-askpass を分離。
+		* -I - がデフォルトで指定されるように変更。
+		* --hide-console を追加。
+		* sample.bat を廃止。
 
 	2002/02/27 1.03
 		* -I と -e を同時に指定した場合、パスフレーズを問い合

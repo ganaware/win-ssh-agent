@@ -1,4 +1,4 @@
-all:	win-ssh-askpass
+all:	win-ssh-agent win-ssh-askpass
 
 CXXFLAGS = -Wall -O2
 RC	= windres
@@ -6,21 +6,32 @@ RC	= windres
 %.res:	%.rc
 	$(RC) -i $< -O coff -o $@
 
-win-ssh-askpass:	main.o resource.res
+win-ssh-agent:	agent.o agent.res misc.o
+	$(LINK.cpp) -e _mainCRTStartup -o $@ $^
+
+win-ssh-askpass:	askpass.o askpass.res misc.o
 	$(LINK.cpp) -mwindows -e _mainCRTStartup -o $@ $^
 
-resource.res:	resource.rc resource.h
+agent.res:	agent.rc agentrc.h agent.ico
+askpass.res:	askpass.rc askpassrc.h askpass.ico
 
 distrib:
-	tar cvzf ../win-ssh-askpass-1.03.tgz	\
-		Makefile			\
-		README.txt			\
-		main.cpp			\
-		resource.h			\
-		resource.rc			\
-		win-ssh-askpass.ico		\
-		sample.bat
+	tar cvzf ../win-ssh-askpass-1.04.tgz	\
+		Makefile 			\
+		README.txt 			\
+		agent.cpp 			\
+		agent.ico 			\
+		agent.rc 			\
+		agent.res 			\
+		agentrc.h 			\
+		askpass.cpp 			\
+		askpass.ico 			\
+		askpass.rc 			\
+		askpass.res 			\
+		askpassrc.h 			\
+		misc.cpp 			\
+		misc.h 
 
 clean:
-	-$(RM) win-ssh-askpass.exe
+	-$(RM) win-ssh-askpass.exe win-ssh-agent.exe
 	-$(RM) *.o *.aps *.coff *.~ *.res

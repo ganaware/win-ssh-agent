@@ -2,81 +2,76 @@
 #include <stdlib.h>
 #include <string.h>
 #include <string>
-#include <windows.h>
 #include <sys/cygwin.h>
 #include <sys/wait.h>
 #include <unistd.h>
-#include "resource.h"
 #include <list>
+#include <stdarg.h>
+#include <errno.h>
 
+#include "agentrc.h"
+#include "misc.h"
 
-// instance
-HINSTANCE g_hInst;
+#undef DEBUG_STDOUT
 
-// get number of array elements
-#define NUMBER_OF(i_array) (sizeof(i_array) / sizeof((i_array)[0]))
+// global variables to save options
 
+typedef std::list<const char *> IdentityFiles;
 
-// load small icon resource
-HICON loadSmallIcon(UINT i_id)
+static IdentityFiles g_option_identityFiles; // --identity, --default-identity
+static  const char *g_option_defaultIdentityFile = ""; // --default-identity
+static bool g_option_DISPLAY = true;		// --DISPLAY, --no-DISPLAY
+static char **g_option_execArgs = NULL;		// --exec
+static bool g_option_hideConsole = false;	// --hide-console
+#ifdef DEBUG_STDOUT
+static bool g_option_verbose = true;		// always verbose
+#else
+static bool g_option_verbose = false;		// --verbose
+#endif
+
+// verbose output
+void verbose(const char *i_format, ...)
 {
-  return reinterpret_cast<HICON>(
-    LoadImage(g_hInst, MAKEINTRESOURCE(i_id), IMAGE_ICON, 16, 16, 0));
-}
-
-// write string to registry
-bool writeRegistry(HKEY i_root, const std::string &i_path,
-		   const std::string &i_name, const std::string &i_value)
-{
-  HKEY hkey;
-  DWORD disposition;
-  if (ERROR_SUCCESS !=
-      RegCreateKeyEx(i_root, i_path.c_str(), 0, "",
-		     REG_OPTION_NON_VOLATILE,
-		     KEY_ALL_ACCESS, NULL, &hkey, &disposition))
-    return false;
-  RegSetValueEx(hkey, i_name.c_str(), 0, REG_SZ,
-		(BYTE *)i_value.c_str(),
-		(i_value.size() + 1) * sizeof(std::string::value_type));
-  RegCloseKey(hkey);
-  return true;
-}
-
-// remove registry
-bool removeRegistry(HKEY i_root, const std::string &i_path,
-		    const std::string &i_name)
-{
-  if (i_name.empty())
-    return RegDeleteKey(i_root, i_path.c_str()) == ERROR_SUCCESS;
-  HKEY hkey;
-  if (ERROR_SUCCESS !=
-      RegOpenKeyEx(i_root, i_path.c_str(), 0, KEY_SET_VALUE, &hkey))
-    return false;
-  LONG r = RegDeleteValue(hkey, i_name.c_str());
-  RegCloseKey(hkey);
-  return r == ERROR_SUCCESS;
+  if (!g_option_verbose)
+    return;
+  va_list args;
+  va_start(args, i_format);
+  vprintf(i_format, args);
+  va_end(args);
+  fflush(stdout);
 }
 
 // get the path of win-ssh-askpass.exe
-std::string getSelfPath()
+std::string getAskpassPath()
 {
-  char win32_pathname[1024];
-  GetModuleFileName(NULL, win32_pathname, NUMBER_OF(win32_pathname));
-  char posix_pathname[1024];
-  cygwin_conv_to_posix_path(win32_pathname, posix_pathname);
-  return posix_pathname;
+  std::string selfPath(getSelfPath());
+  std::string::size_type i = selfPath.find_last_of('/');
+  if (i != std::string::npos)
+    selfPath = selfPath.substr(0, i);
+  return selfPath + "/win-ssh-askpass.exe";
 }
 
 // run ssh-add
 int run_ssh_add(const char *i_identityFile)
 {
   pid_t childPID = fork();
-  setenv("SSH_ASKPASS", getSelfPath().c_str(), 1);
+  setenv("SSH_ASKPASS", getAskpassPath().c_str(), 1);
+  verbose("export SSH_ASKPASS=%s\n", getAskpassPath().c_str());
+
   if (childPID == 0)				// child process
   {
     close(0);
     setenv("DISPLAY", "localhost:0", 0);
+    verbose("export DISPLAY=localhost:0\n");
+    verbose("exec ssh-add %s\n", i_identityFile ? i_identityFile : "");
+    if (i_identityFile && !i_identityFile[0])
+      i_identityFile = NULL;
     execlp("ssh-add", "ssh-add", i_identityFile, NULL);
+    
+    std::string message("Failed to exec ssh-add.exe : \r\n");
+    message += sys_errlist[errno];
+    MessageBox(NULL, message.c_str(), "win-ssh-agent", MB_OK | MB_ICONSTOP);
+    return 1;
   }
   while (true)
   {
@@ -84,7 +79,17 @@ int run_ssh_add(const char *i_identityFile)
     int pid = wait3(&status, 0, NULL);
     if (pid == childPID || pid <= 0)
       if (WIFEXITED(status))
+      {
+	verbose("ssh-add exit(%d)\n", WEXITSTATUS(status));
+#if 1
+	if (WEXITSTATUS(status) == 2)
+	{
+	  MessageBox(NULL, "ssh-add exit(2) : \nCould not open a connection to your authentication agent.",
+		     "win-ssh-agent", MB_OK | MB_ICONSTOP);
+	}
+#endif
 	return WEXITSTATUS(status);
+      }
       else 
 	return -1;
   }
@@ -110,19 +115,16 @@ void run_program(char **i_argv)
       arg += "\"";
       param += arg;
     }
+    verbose("ShellExecute %s %s\n", win32_pathname, param.c_str());
     ShellExecute(NULL, "open", win32_pathname, param.c_str(),
 		 NULL, SW_SHOWDEFAULT);
   }
   else
+  {
+    verbose("ShellExecute %s\n", win32_pathname);
     ShellExecute(NULL, "open", win32_pathname, NULL, NULL, SW_SHOWDEFAULT);
+  }
 }
-
-// global variables to save options
-typedef std::list<const char *> IdentityFiles;
-static IdentityFiles g_option_identityFiles; // --identity, --default-identity
-static  const char *g_option_defaultIdentityFile = NULL; // --default-identity
-static bool g_option_DISPLAY = true;		// --DISPLAY, --no-DISPLAY
-static char **g_option_execArgs = NULL;		// --exec
 
 //
 bool checkOptions(int i_argc, char **i_argv)
@@ -140,13 +142,27 @@ bool checkOptions(int i_argc, char **i_argv)
       g_option_DISPLAY = true;
     else if (a == "--no-DISPLAY")
       g_option_DISPLAY = false;
+    else if (a == "--hide-console")
+      g_option_hideConsole = true;
+    else if (a == "--verbose")
+      g_option_verbose = true;
     else if (i + 1 < i_argc)
     {
       if (a == "-i" || a == "--identity")
 	g_option_identityFiles.push_back(i_argv[++ i]);
       else if (a == "-I" || a == "--default-identity")
-	g_option_identityFiles.push_back(
-	  g_option_defaultIdentityFile = i_argv[++ i]);
+      {
+	++ i;
+	if (std::string(i_argv[i]) == "-")
+	  g_option_defaultIdentityFile = "";
+	else
+	{
+	  g_option_identityFiles.push_back(i_argv[i]);
+	  g_option_defaultIdentityFile = i_argv[i];
+	}
+      }
+      else if (a == "--no-default-identity")
+	g_option_defaultIdentityFile = NULL;
       else if (a == "-e" || a == "--exec")
       {
 	g_option_execArgs = &i_argv[++ i];
@@ -170,7 +186,7 @@ bool checkOptions(int i_argc, char **i_argv)
       message += "\r\n";
     }
     MessageBox(NULL, message.c_str(),
-	       "win-ssh-askpass", MB_OK | MB_ICONSTOP);
+	       "win-ssh-agent", MB_OK | MB_ICONSTOP);
     return false;
   }
   return true;
@@ -387,121 +403,18 @@ public:
   }  
 };
 
-//
-class DialogPassphrase
-{
-  HWND m_hwnd;					// HWND of dialog box
-  std::string m_prompt;				// prompt
-  std::string m_passPhrase;			// result
-  
-private:
-  static BOOL CALLBACK dlgProc(HWND i_hwnd, UINT i_message,
-			       WPARAM i_wParam, LPARAM i_lParam)
-  {
-    DialogPassphrase *This =
-      reinterpret_cast<DialogPassphrase *>(
-	GetWindowLong(i_hwnd, GWL_USERDATA));
-    if (!This)
-      switch (i_message)
-      {
-	case WM_INITDIALOG:
-	  This = reinterpret_cast<DialogPassphrase *>(i_lParam);
-	  SetWindowLong(i_hwnd, GWL_USERDATA, i_lParam);
-	  This->initialize(i_hwnd);
-	  return This->wmInitDialog(reinterpret_cast<HWND>(i_wParam));
-      }
-    else
-      switch (i_message)
-      {
-	case WM_CLOSE:
-	  return This->wmClose();
-	case WM_COMMAND:
-	  return This->wmCommand(HIWORD(i_wParam), LOWORD(i_wParam),
-				 reinterpret_cast<HWND>(i_lParam));
-      }
-    return FALSE;
-  }
-
-  //
-  void initialize(HWND i_hwnd)
-  {
-    m_hwnd = i_hwnd;
-  }
-  
-  // WM_INITDIALOG
-  BOOL wmInitDialog(HWND /* i_focus */)
-  {
-    SetWindowText(GetDlgItem(m_hwnd, IDC_PROMPT), m_prompt.c_str());
-    return TRUE;
-  }
-
-  // WM_CLOSE
-  BOOL wmClose()
-  {
-    EndDialog(m_hwnd, 0);
-    return TRUE;
-  }
-
-  // WM_COMMAND
-  BOOL wmCommand(int /* i_notifyCode */, int i_id, HWND /* i_hwndControl */)
-  {
-    switch (i_id)
-    {
-      case IDOK:
-      {
-	TCHAR buf[1024];
-	GetWindowText(GetDlgItem(m_hwnd, IDC_PASSPHRASE), buf, NUMBER_OF(buf));
-	m_passPhrase = buf;
-	EndDialog(m_hwnd, 1);
-	return TRUE;
-      }
-      case IDCANCEL:
-      {
-	EndDialog(m_hwnd, 0);
-	return TRUE;
-      }
-    }
-    return FALSE;
-  }
-
-public:
-  //
-  DialogPassphrase(const std::string &i_prompt)
-    : m_hwnd(NULL),
-      m_prompt(i_prompt)
-  {
-  }
-
-  //
-  INT_PTR dialogBox(HWND i_hwndParent)
-  {
-    return DialogBoxParam(g_hInst, MAKEINTRESOURCE(IDD_ASK_PASS),
-			  i_hwndParent, dlgProc,
-			  reinterpret_cast<LPARAM>(this));
-  }
-  
-  //
-  const std::string &getPassPhrase() const
-  {
-    return m_passPhrase;
-  }
-};
-
 // main
 int main(int i_argc, char **i_argv)
 {
   g_hInst = GetModuleHandle(NULL);
   
-  // 3. Executed via ssh-add
-  if (getenv("SSH_ASKPASS") && getenv("DISPLAY")) // invoked as ASKPASS mode
-  {
-    DialogPassphrase dp(2 <= i_argc ? i_argv[1] : "");
-    if (dp.dialogBox(NULL))
-      printf("%s\n", dp.getPassPhrase().c_str());
-    else
-      printf("\n");
-    return 0;
-  }
+#ifdef DEBUG_STDOUT
+  printf("> ");
+  for (int i = 0; i < i_argc; ++ i)
+    printf("%s ", i_argv[i]);
+  printf("\n");
+  fflush(stdout);
+#endif
   
   // 2. Executed by me via ssh-agent
   if (2 <= i_argc && i_argv[1] == std::string("--no-ssh-agent"))
@@ -513,27 +426,53 @@ int main(int i_argc, char **i_argv)
       return 1;
 
     // is another running ?
-    HANDLE mutex =
-      CreateMutex(NULL, TRUE, "{6A1AFE71-F534-47a2-AB94-2ED3758C18AE}");
+    static const char *GUID = "{6A1AFE71-F534-47a2-AB94-2ED3758C18AE}";
+    HANDLE mutex = CreateMutex(NULL, TRUE, GUID);
     if (GetLastError() == ERROR_ALREADY_EXISTS)
     {
-      MessageBox(NULL, "Another WIN-SSH-ASKPASS is runnnig!",
-		 "win-ssh-askpass", MB_OK | MB_ICONSTOP);
+      MessageBox(NULL, "Another win-ssh-agent.exe is runnnig!",
+		 "win-ssh-agent", MB_OK | MB_ICONSTOP);
       return 1;
+    }
+
+    // hide console
+    HWND hwndConsole = NULL;
+    if (g_option_hideConsole)
+    {
+      char buf[1024];
+      GetConsoleTitle(buf, sizeof(buf));
+      SetConsoleTitle(GUID);
+      for (int i = 0; !hwndConsole && i < 256; ++ i)
+      {
+	Sleep(100);
+        hwndConsole = FindWindowEx(NULL, NULL, NULL, GUID);
+      }
+      SetConsoleTitle(buf);
+      if (hwndConsole)
+	ShowWindow(hwndConsole, SW_HIDE);
     }
     
     bool hasDISPLAY = !!getenv("DISPLAY");
+    if (hasDISPLAY)
+      verbose("DISPLAY=%s\n", getenv("DISPLAY"));
     
-    std::string selfPath(getSelfPath());
-    setenv("SSH_ASKPASS", selfPath.c_str(), 1);
+    std::string askpassPath(getAskpassPath());
+    setenv("SSH_ASKPASS", askpassPath.c_str(), 1);
     writeRegistry(HKEY_CURRENT_USER, "Environment", "SSH_AGENT_PID",
 		  getenv("SSH_AGENT_PID"));
+    verbose("export SSH_AGENT_PID=%s\n", getenv("SSH_AGENT_PID"));
     writeRegistry(HKEY_CURRENT_USER, "Environment", "SSH_AUTH_SOCK",
 		  getenv("SSH_AUTH_SOCK"));
-    writeRegistry(HKEY_CURRENT_USER, "Environment", "SSH_ASKPASS", selfPath);
+    verbose("export SSH_AUTH_SOCK=%s\n", getenv("SSH_AUTH_SOCK"));
+    writeRegistry(HKEY_CURRENT_USER, "Environment", "SSH_ASKPASS",
+		  askpassPath);
+    verbose("export SSH_ASKPASS=%s\n", askpassPath.c_str());
     if (!hasDISPLAY && g_option_DISPLAY)
+    {
       writeRegistry(HKEY_CURRENT_USER, "Environment", "DISPLAY",
 		    "localhost:0");
+      verbose("export DISPLAY=localhost:0\n");
+    }
       
     DWORD returnValue;
     SendMessageTimeout(HWND_BROADCAST, WM_SETTINGCHANGE, 0,
@@ -546,25 +485,36 @@ int main(int i_argc, char **i_argv)
       if (g_option_execArgs && (status == 0))
 	run_program(g_option_execArgs);
     }
-    
+
+    verbose("sleep\n");
     TaskTray().messageLoop();
 
     if (!hasDISPLAY && g_option_DISPLAY)
+    {
       removeRegistry(HKEY_CURRENT_USER, "Environment", "DISPLAY");
+      verbose("export DISPLAY=\n");
+    }
     removeRegistry(HKEY_CURRENT_USER, "Environment", "SSH_ASKPASS");
+    verbose("export SSH_ASKPASS=\n");
     removeRegistry(HKEY_CURRENT_USER, "Environment", "SSH_AUTH_SOCK");
+    verbose("export SSH_AUTH_SOCK=\n");
     removeRegistry(HKEY_CURRENT_USER, "Environment", "SSH_AGENT_PID");
+    verbose("export SSH_AGENT_PID=\n");
     
     SendMessageTimeout(HWND_BROADCAST, WM_SETTINGCHANGE, 0,
 		       (LPARAM)"Environment", SMTO_ABORTIFHUNG,
 		       5000, &returnValue);
 
     CloseHandle(mutex);
+
+    if (hwndConsole)
+      ShowWindow(hwndConsole, SW_SHOW);
     
     return 0;
   }
 
   // 1. Executed by user (from Explorer etc.)
+  else
   {
     const std::string selfPath(getSelfPath());
     char **argv = new char *[i_argc + 3];
@@ -573,7 +523,18 @@ int main(int i_argc, char **i_argv)
     argv[2] = "--no-ssh-agent";
     for (int i = 1; i <= i_argc; ++ i)
       argv[i + 2] = i_argv[i];
+#ifdef DEBUG_STDOUT
+    printf("exec ");
+    for (int i = 0; argv[i]; ++ i)
+      printf("%s ", argv[i]);
+    printf("\n");
+    fflush(stdout);
+#endif
     execvp("ssh-agent", argv);
+    
+    std::string message("Failed to exec ssh-agent.exe : \n");
+    message += sys_errlist[errno];
+    MessageBox(NULL, message.c_str(), "win-ssh-agent", MB_OK | MB_ICONSTOP);
     delete argv;
     return 1;
   }
