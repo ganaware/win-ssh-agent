@@ -33,7 +33,7 @@
 		SSH_AGENT_PID	the process ID for ssh-agent.exe
 		SSH_AUTH_SOCK	the socket-path for ssh-agent.exe
 		SSH_ASKPASS	the path of win-ssh-askpass.exe
-		DISPLAY		localhost:0
+		DISPLAY		:0
 
 	(The terms of set up the DISPLAY environment variable are that
 	the DISPLAY have not been set up and also then --no-DISPLAY
@@ -166,6 +166,10 @@
 
 
 7. History
+
+	2004/01/xx 1.05
+		* Now, win-ssh-agent set up an environment variable
+                  DISPLAY to :0 instead of localhost:0.
 
 	2002/09/22 1.04
 		* I separated the win-ssh-agent and the win-ssh-askpass.

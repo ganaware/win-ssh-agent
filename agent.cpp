@@ -61,7 +61,7 @@ int run_ssh_add(const char *i_identityFile)
   if (childPID == 0)				// child process
   {
     close(0);
-    setenv("DISPLAY", "localhost:0", 0);
+    setenv("DISPLAY", ":0", 0);
     verbose("export DISPLAY=localhost:0\n");
     verbose("exec ssh-add %s\n", i_identityFile ? i_identityFile : "");
     if (i_identityFile && !i_identityFile[0])
