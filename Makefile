@@ -22,12 +22,10 @@ distrib:
 		agent.cpp 			\
 		agent.ico 			\
 		agent.rc 			\
-		agent.res 			\
 		agentrc.h 			\
 		askpass.cpp 			\
 		askpass.ico 			\
 		askpass.rc 			\
-		askpass.res 			\
 		askpassrc.h 			\
 		misc.cpp 			\
 		misc.h 
