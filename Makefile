@@ -26,6 +26,7 @@ distrib:	all
 	tar cvzf ../win-ssh-askpass-1.05.tgz	\
 		Makefile			\
 		README.txt			\
+		README-ja.txt			\
 		agent.cpp			\
 		agent.ico			\
 		agent.rc			\

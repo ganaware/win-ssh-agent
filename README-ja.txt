@@ -169,11 +169,12 @@
 
 7. 履歴
 
-	2004/02/xx 1.05
+	2006/04/02 1.05
 		* DISPLAY 環境変数に設定する値を :0 にした。(以前は 
                   localhost:0 だった)
 		* 英語 README の添付。(Thanks to Ralf Hauser and Naoko)
 		* -a と -t オプションの追加。
+		* cygwin 1.5.19 に対応。
 
 	2002/09/22 1.04
 		* win-ssh-agent と win-ssh-askpass を分離。

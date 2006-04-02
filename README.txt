@@ -181,12 +181,13 @@
 
 7. History
 
-	2004/02/xx 1.05
+	2006/04/02 1.05
 		* Now, win-ssh-agent set up an environment variable
                   DISPLAY to :0 instead of localhost:0.
 		* Thanks to Ralf Hauser and Naoko, README written in
 		  English is available.
 		* -a and -t are added.
+		* some bug fix for cygwin 1.5.19.
 
 	2002/09/22 1.04
 		* I separated the win-ssh-agent and the win-ssh-askpass.
