@@ -97,11 +97,55 @@ int run_ssh_add(const char *i_identityFile)
   }
 }
 
+// http://sourceware.org/ml/cygwin/2006-02/msg00289.html
+/* Copy cygwin environment variables to the Windows environment if they're not
+ * already there. */
+static void setup_win_environ(void)
+{
+  char **envp = environ;
+  char *var, *val;
+  char curval[2];
+  char *winpathlist;
+  char winpath[MAX_PATH+1];
+
+  while (envp && *envp) {
+    var = strdup(*envp++);
+    val = strchr(var, '=');
+    *val++ = '\0';
+        
+    if (GetEnvironmentVariable(var, curval, 2) == 0
+	&& GetLastError() == ERROR_ENVVAR_NOT_FOUND) {
+      /* Convert POSIX to Win32 where necessary */
+      if (!strcmp(var, "PATH") ||
+	  !strcmp(var, "LD_LIBRARY_PATH")) {
+	winpathlist = (char *)
+	  malloc(cygwin_posix_to_win32_path_list_buf_size(val) + 1);
+	if (winpathlist) {
+	  cygwin_posix_to_win32_path_list(val, winpathlist);
+	  SetEnvironmentVariable(var, winpathlist);
+	  free(winpathlist);
+	}
+      } else if (!strcmp(var, "HOME") ||
+		 !strcmp(var, "TMPDIR") ||
+		 !strcmp(var, "TMP") ||
+		 !strcmp(var, "TEMP")) {
+	cygwin_conv_to_win32_path(val, winpath);
+	SetEnvironmentVariable(var, winpath);
+      } else {
+	SetEnvironmentVariable(var, val);
+      }
+    }
+
+    free(var);
+  }
+}
+
 // run any program
 void run_program(char **i_argv)
 {
   char win32_pathname[1024];
   cygwin_conv_to_win32_path(i_argv[0], win32_pathname);
+  setup_win_environ();
   
   if (i_argv[1])
   {
@@ -494,7 +538,9 @@ int main(int i_argc, char **i_argv)
     {
       int status = run_ssh_add(g_option_defaultIdentityFile);
       if (g_option_execArgs && (status == 0))
+      {
 	run_program(g_option_execArgs);
+      }
     }
 
     verbose("sleep\n");
