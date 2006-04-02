@@ -143,7 +143,7 @@
 
 6. Copyright
 
-	Copyright (c) 2001-2002, TAGA Nayuta <nayuta@ganaware.jp>
+	Copyright (c) 2001-2006, TAGA Nayuta <nayuta@ganaware.jp>
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or
