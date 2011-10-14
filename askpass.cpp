@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string>
+#include <locale.h>
 #include "misc.h"
 #include "askpassrc.h"
 
@@ -7,8 +8,8 @@
 class DialogPassphrase
 {
   HWND m_hwnd;					// HWND of dialog box
-  std::string m_prompt;				// prompt
-  std::string m_passPhrase;			// result
+  std::wstring m_prompt;			// prompt
+  std::wstring m_passPhrase;			// result
   
 private:
   static BOOL CALLBACK dlgProc(HWND i_hwnd, UINT i_message,
@@ -16,13 +17,13 @@ private:
   {
     DialogPassphrase *This =
       reinterpret_cast<DialogPassphrase *>(
-	GetWindowLong(i_hwnd, GWL_USERDATA));
+	GetWindowLongW(i_hwnd, GWL_USERDATA));
     if (!This)
       switch (i_message)
       {
 	case WM_INITDIALOG:
 	  This = reinterpret_cast<DialogPassphrase *>(i_lParam);
-	  SetWindowLong(i_hwnd, GWL_USERDATA, i_lParam);
+	  SetWindowLongW(i_hwnd, GWL_USERDATA, i_lParam);
 	  This->initialize(i_hwnd);
 	  return This->wmInitDialog(reinterpret_cast<HWND>(i_wParam));
       }
@@ -47,7 +48,7 @@ private:
   // WM_INITDIALOG
   BOOL wmInitDialog(HWND /* i_focus */)
   {
-    SetWindowText(GetDlgItem(m_hwnd, IDC_PROMPT), m_prompt.c_str());
+    SetWindowTextW(GetDlgItem(m_hwnd, IDC_PROMPT), m_prompt.c_str());
     setSmallIcon(m_hwnd, IDI_ASK_PASS);
     setBigIcon(m_hwnd, IDI_ASK_PASS);
     return TRUE;
@@ -67,8 +68,8 @@ private:
     {
       case IDOK:
       {
-	TCHAR buf[1024];
-	GetWindowText(GetDlgItem(m_hwnd, IDC_PASSPHRASE), buf, NUMBER_OF(buf));
+	wchar_t buf[1024];
+	GetWindowTextW(GetDlgItem(m_hwnd, IDC_PASSPHRASE), buf, NUMBER_OF(buf));
 	m_passPhrase = buf;
 	EndDialog(m_hwnd, 1);
 	return TRUE;
@@ -84,7 +85,7 @@ private:
 
 public:
   //
-  DialogPassphrase(const std::string &i_prompt)
+  DialogPassphrase(const std::wstring &i_prompt)
     : m_hwnd(NULL),
       m_prompt(i_prompt)
   {
@@ -93,13 +94,13 @@ public:
   //
   INT_PTR dialogBox(HWND i_hwndParent)
   {
-    return DialogBoxParam(g_hInst, MAKEINTRESOURCE(IDD_ASK_PASS),
+    return DialogBoxParamW(g_hInst, MAKEINTRESOURCEW(IDD_ASK_PASS),
 			  i_hwndParent, dlgProc,
 			  reinterpret_cast<LPARAM>(this));
   }
   
   //
-  const std::string &getPassPhrase() const
+  const std::wstring &getPassPhrase() const
   {
     return m_passPhrase;
   }
@@ -108,11 +109,13 @@ public:
 // main
 int main(int i_argc, char **i_argv)
 {
+  setlocale(LC_ALL, "");
+  
   g_hInst = GetModuleHandle(NULL);
   
-  DialogPassphrase dp(2 <= i_argc ? i_argv[1] : "");
+  DialogPassphrase dp(2 <= i_argc ? to_wstring(i_argv[1]).c_str() : L"");
   if (dp.dialogBox(NULL))
-    printf("%s\n", dp.getPassPhrase().c_str());
+    printf("%ls\n", dp.getPassPhrase().c_str());
   else
     printf("\n");
   return 0;

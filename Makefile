@@ -23,22 +23,25 @@ install:	win-ssh-agent win-ssh-askpass
 distrib:	all
 	strip win-ssh-agent.exe
 	strip win-ssh-askpass.exe
-	tar cvzf ../win-ssh-askpass-1.05.tgz	\
-		Makefile			\
-		README.txt			\
-		README-ja.txt			\
-		agent.cpp			\
-		agent.ico			\
-		agent.rc			\
-		agentrc.h			\
-		askpass.cpp			\
-		askpass.ico			\
-		askpass.rc			\
-		askpassrc.h			\
-		misc.cpp			\
-		misc.h				\
-		win-ssh-agent.exe		\
-		win-ssh-askpass.exe
+	tar cvzfC win-ssh-askpass-1.06.tgz	..	\
+		win-ssh-askpass/.gitignore			\
+		win-ssh-askpass/Makefile			\
+		win-ssh-askpass/README-ja.txt		\
+		win-ssh-askpass/README.txt			\
+		win-ssh-askpass/agent.cpp			\
+		win-ssh-askpass/agent.ico			\
+		win-ssh-askpass/agent.manifest		\
+		win-ssh-askpass/agent.rc			\
+		win-ssh-askpass/agentrc.h			\
+		win-ssh-askpass/askpass.cpp		\
+		win-ssh-askpass/askpass.ico		\
+		win-ssh-askpass/askpass.manifest	\
+		win-ssh-askpass/askpass.rc			\
+		win-ssh-askpass/askpassrc.h		\
+		win-ssh-askpass/misc.cpp			\
+		win-ssh-askpass/misc.h				\
+		win-ssh-askpass/win-ssh-agent.exe	\
+		win-ssh-askpass/win-ssh-askpass.exe
 
 clean:
 	-$(RM) win-ssh-askpass.exe win-ssh-agent.exe

@@ -96,7 +96,7 @@
 		If - is specified as a FILENAME, the same identity
 		files are considerd to be specified as the ssh-add
 		with no-options uses.  (i.e. ~/.ssh/id_rsa,
-		~/.ssh/id_dsa, ~/.ssh/identity)
+		~/.ssh/id_dsa, ~/.ssh/id_ecdsa, ~/.ssh/identity)
 
 	--no-default-identity
 
@@ -112,14 +112,14 @@
 
 	-a BIND_ADDRESS
 
-		Bind the agent to the unix-domain socket bind_address.  The
-		default is /tmp/ssh-XXXXXXXX/agent.<ppid>.
+		Bind the agent to the UNIX-domain socket bind_address.  The
+		default is $TMPDIR/ssh-XXXXXXXXXX/agent.<ppid>.
 
 	-t LIFE
 
 		Set a default value for the maximum lifetime of identities
 		added to the agent.  The lifetime may be specified in seconds
-		or in a time format specified in sshd(8).  A lifetime
+		or in a time format specified in sshd_config(5).  A lifetime
 		specified for an identity with ssh-add(1) overrides this
 		value.  Without this option the default maximum lifetime is
 		forever.
@@ -138,12 +138,12 @@
 
 5. Support 
 
-	http://www.ganaware.jp/S/win-ssh-askpass/
+	https://github.com/ganaware/win-ssh-askpass
 
 
 6. Copyright
 
-	Copyright (c) 2001-2006, TAGA Nayuta <nayuta@ganaware.jp>
+	Copyright (c) 2001-2006, 2011, TAGA Nayuta <nayuta@ganaware.jp>
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or
@@ -180,6 +180,9 @@
 
 
 7. History
+
+	2011/10/14 1.06
+		* fix for cygwin 1.7
 
 	2006/04/02 1.05
 		* Now, win-ssh-agent set up an environment variable

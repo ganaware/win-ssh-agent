@@ -39,34 +39,34 @@ HICON setBigIcon(HWND i_hwnd, UINT i_id)
 }
 
 // write string to registry
-bool writeRegistry(HKEY i_root, const std::string &i_path,
-		   const std::string &i_name, const std::string &i_value)
+bool writeRegistry(HKEY i_root, const std::wstring &i_path,
+		   const std::wstring &i_name, const std::wstring &i_value)
 {
   HKEY hkey;
   DWORD disposition;
   if (ERROR_SUCCESS !=
-      RegCreateKeyEx(i_root, i_path.c_str(), 0, "",
+      RegCreateKeyExW(i_root, i_path.c_str(), 0, NULL,
 		     REG_OPTION_NON_VOLATILE,
 		     KEY_ALL_ACCESS, NULL, &hkey, &disposition))
     return false;
-  RegSetValueEx(hkey, i_name.c_str(), 0, REG_SZ,
-		(BYTE *)i_value.c_str(),
-		(i_value.size() + 1) * sizeof(std::string::value_type));
+  RegSetValueExW(hkey, i_name.c_str(), 0, REG_SZ,
+		reinterpret_cast<BYTE *>(const_cast<wchar_t *>(i_value.c_str())),
+		(i_value.size() + 1) * sizeof(std::wstring::value_type));
   RegCloseKey(hkey);
   return true;
 }
 
 // remove registry
-bool removeRegistry(HKEY i_root, const std::string &i_path,
-		    const std::string &i_name)
+bool removeRegistry(HKEY i_root, const std::wstring &i_path,
+		    const std::wstring &i_name)
 {
   if (i_name.empty())
-    return RegDeleteKey(i_root, i_path.c_str()) == ERROR_SUCCESS;
+    return RegDeleteKeyW(i_root, i_path.c_str()) == ERROR_SUCCESS;
   HKEY hkey;
   if (ERROR_SUCCESS !=
-      RegOpenKeyEx(i_root, i_path.c_str(), 0, KEY_SET_VALUE, &hkey))
+      RegOpenKeyExW(i_root, i_path.c_str(), 0, KEY_SET_VALUE, &hkey))
     return false;
-  LONG r = RegDeleteValue(hkey, i_name.c_str());
+  LONG r = RegDeleteValueW(hkey, i_name.c_str());
   RegCloseKey(hkey);
   return r == ERROR_SUCCESS;
 }
@@ -74,9 +74,83 @@ bool removeRegistry(HKEY i_root, const std::string &i_path,
 // get the path of win-ssh-askpass.exe
 std::string getSelfPath()
 {
-  char win32_pathname[1024];
-  GetModuleFileName(NULL, win32_pathname, NUMBER_OF(win32_pathname));
-  char posix_pathname[1024];
-  cygwin_conv_to_posix_path(win32_pathname, posix_pathname);
-  return posix_pathname;
+  static const size_t N = 1024;
+  wchar_t win32_pathname[N];
+  if (GetModuleFileNameW(NULL, win32_pathname, N) == 0) {
+	abort();
+  }
+  win32_pathname[N - 1] = L'\0';
+  // NULL terminate for XP, 2000
+  // http://msdn.microsoft.com/en-us/library/windows/desktop/ms683197(v=vs.85).aspx
+  return conv_path_win_to_posix(win32_pathname);
+}
+
+// convert path
+bool conv_path_win_to_posix(std::string *o_dst, const std::wstring &i_src)
+{
+  ssize_t bytes = cygwin_conv_path(CCP_WIN_W_TO_POSIX, i_src.c_str(), NULL, 0);
+  if (bytes <= 0) {
+	return false;
+  }
+  o_dst->resize(bytes - 1);
+  cygwin_conv_path(CCP_WIN_W_TO_POSIX, i_src.c_str(),
+				   const_cast<char *>(o_dst->c_str()), bytes);
+  return true;
+}
+
+std::string conv_path_win_to_posix(const std::wstring &i_src)
+{
+  std::string buf;
+  if (!conv_path_win_to_posix(&buf, i_src)) {
+	abort();
+  }
+  return buf;
+}
+
+// convert path
+bool conv_path_posix_to_win(std::wstring *o_dst, const std::string &i_src)
+{
+  ssize_t bytes = cygwin_conv_path(CCP_POSIX_TO_WIN_W, i_src.c_str(), NULL, 0);
+  if (bytes <= 0) {
+	return false;
+  }
+  o_dst->resize(bytes / sizeof(std::wstring::value_type) - 1);
+  cygwin_conv_path(CCP_POSIX_TO_WIN_W, i_src.c_str(),
+				   const_cast<wchar_t *>(o_dst->c_str()), bytes);
+  return true;
+}
+
+std::wstring conv_path_posix_to_win(const std::string &i_src)
+{
+  std::wstring buf;
+  if (!conv_path_posix_to_win(&buf, i_src)) {
+	abort();
+  }
+  return buf;
+}
+
+// convert string to wstring
+bool s_to_ws(std::wstring *o_dst, const std::string &i_src)
+{
+  if (i_src.size() == 0) {
+	o_dst->clear();
+	return true;
+  }
+  size_t size = mbstowcs(NULL, i_src.c_str(), 0);
+  if (size == static_cast<size_t>(-1)) {
+	return false;
+  }
+  o_dst->resize(size);
+  mbstowcs(const_cast<wchar_t *>(o_dst->c_str()), i_src.c_str(),
+		   o_dst->size() + 1);
+  return true;
+}
+
+std::wstring to_wstring(const std::string &i_src)
+{
+  std::wstring buf;
+  if (!s_to_ws(&buf, i_src)) {
+	abort();
+  }
+  return buf;
 }

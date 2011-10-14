@@ -84,8 +84,9 @@
 
 		デフォルトでは -I - が暗黙に指定されています。FILENAME 
 		として - を指定すると、ssh-add を引数なしで実行した場
-		合と同じファイル (~/.ssh/id_rsa, ~/.ssh/id_dsa
-		~/.ssh/identity) を指定したことになります。
+		合と同じファイル (~/.ssh/id_rsa, ~/.ssh/id_dsa,
+		~/.ssh/id_ecdsa, ~/.ssh/identity) を指定したことになり
+		ます。
 
 	--no-default-identity
 
@@ -100,14 +101,14 @@
 
 	-a BIND_ADDRESS
 
-		Bind the agent to the unix-domain socket bind_address.  The
-		default is /tmp/ssh-XXXXXXXX/agent.<ppid>.
+		Bind the agent to the UNIX-domain socket bind_address.  The
+		default is $TMPDIR/ssh-XXXXXXXXXX/agent.<ppid>.
 
 	-t LIFE
 
 		Set a default value for the maximum lifetime of identities
 		added to the agent.  The lifetime may be specified in seconds
-		or in a time format specified in sshd(8).  A lifetime
+		or in a time format specified in sshd_config(5).  A lifetime
 		specified for an identity with ssh-add(1) overrides this
 		value.  Without this option the default maximum lifetime is
 		forever.
@@ -126,12 +127,12 @@
 
 5. サポート
 
-	http://www.ganaware.jp/S/win-ssh-askpass/
+	https://github.com/ganaware/win-ssh-askpass
 
 
 6. Copyright
 
-	Copyright (c) 2001-2006, TAGA Nayuta <nayuta@ganaware.jp>
+	Copyright (c) 2001-2006, 2011 TAGA Nayuta <nayuta@ganaware.jp>
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or
@@ -168,6 +169,9 @@
 
 
 7. 履歴
+
+	2011/10/14 1.06
+		* cygwin 1.7 用の修正
 
 	2006/04/02 1.05
 		* DISPLAY 環境変数に設定する値を :0 にした。(以前は 

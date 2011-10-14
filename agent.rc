@@ -16,3 +16,4 @@ BEGIN
 END
 
 IDI_TASKTRAY            ICON    DISCARDABLE     "agent.ico"
+1                       RT_MANIFEST             "askpass.manifest"
