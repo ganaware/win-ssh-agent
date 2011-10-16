@@ -7,14 +7,18 @@ PREFIX	?= /usr/local/bin
 %.res:	%.rc
 	$(RC) -i $< -O coff -o $@
 
+agent.o:	agent.cpp   agentrc.h   misc.h
+askpass.o:	askpass.cpp askpassrc.h misc.h
+misc.o:	misc.cpp                misc.h
+
 win-ssh-agent:	agent.o agent.res misc.o
 	$(LINK.cpp) -e _mainCRTStartup -o $@ $^
 
 win-ssh-askpass:	askpass.o askpass.res misc.o
 	$(LINK.cpp) -mwindows -e _mainCRTStartup -o $@ $^
 
-agent.res:	agent.rc agentrc.h agent.ico
-askpass.res:	askpass.rc askpassrc.h askpass.ico
+agent.res:		agent.rc   agentrc.h   agent.ico   agent.manifest
+askpass.res:	askpass.rc askpassrc.h askpass.ico askpass.manifest
 
 install:	win-ssh-agent win-ssh-askpass
 	install -D -s win-ssh-agent $(PREFIX)/win-ssh-agent
