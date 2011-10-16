@@ -1,30 +1,52 @@
 
 
-		    win-ssh-agent, win-ssh-askpass
+		win-ssh-agent, win-ssh-askpass (for the cygwin openssh)
 
 
 1. Introduction
 
-	When using the ssh-agent with X, you can start the ssh-agent in
-	the .xsession or the .xinitrc.  Then all your programs are able
-	to refer to environment variables the SSH_AGENT_PID and the
-	SSH_AUTH_SOCK.  It must be very useful.
+	With the win-ssh-agent, we can use the ssh-agent (available in
+	the cygwin openssh) in the more smart way.
 
-	In the cygwin, however, it may be difficult to set up the
-	environment variables that can be referred to by all your
-	programs.  In such case, you need to start all relevant
-	programs, which might need to use the ssh, as child processes
-	of the shell (e.g. bash) in which you eval'ed the ssh-agent.
+	Normally, we need to start all relevant programs, which might
+	need to use the ssh, as child processes of the shell
+	(e.g. bash) in which you eval'ed the ssh-agent.  Because, the
+	programs must be able to refer to environment variables that
+	set by the ssh-agent.
 
 	The win-ssh-agent enables all programs to refer to the
-	environment variables of the ssh-agent, i.e. the SSH_AGENT_PID
-	and the SSH_AUTH_SOCK.
+	environment variables of the ssh-agent, i.e. the
+	SSH_AUTH_SOCK.  Now, we no longer need to start programs as
+	child processes of the shell.
 
-	The win-ssh-askpass can fulfill the same function of the
-	ssh-askpass for X.
 
-	
-2. Behaviors
+2. Install
+
+	The win-ssh-agent.exe and the win-ssh-askpass.exe should be in
+	the same directory (e.g. /usr/local/bin/) .
+
+	Install the cygwin openssh by the cygwin setup.exe.
+	I confirmed that the openssh-5.8p1-1 worked properly.
+
+	# The openssh 5.9p1-1 does not work.  Its ssh-agent does not
+	# create the UNIX-domain socket.  I think it is a bug.
+
+	The system wide PATH environment variable must have /bin of the
+	cygwin (e.g. PATH=C:\cygwin\bin;...)
+
+
+3. Run and Terminate
+
+	To run, double-click the win-ssh-agent.exe .
+
+	It asks the pass-phrases.  After you fulfill them, the
+	win-ssh-agent stays in the notification area of the taskbar.
+
+	To terminate it, right-click the icon in the notification
+	area, then choose "Exit".
+
+
+4. Behaviors
 
 	After the win-ssh-agent started, it will make the ssh-agent
 	automatically start.  And then the below environment variables
@@ -45,24 +67,12 @@
 	environment variables, because they are set up into the
 	Explorer.
 
-	The win-ssh-agent stays in the task-tray and deletes each
-	environment variable at the end of its life.
+	The win-ssh-agent stays in the notification area of the
+	taskbar and deletes each environment variable at the end of
+	its life.
 
 	
-	If the DISPLAY and the SSH_ASKPASS are correctly set up, the
-	ssh-add will start the win-ssh-askpass.  In this case the
-	pass-phrase will be required like the case of ssh-askpass for
-	X.
-
-
-	Because the win-ssh-askpass uses the tool of the openssh
-	inside, the PATH environment variable must have /bin of the
-	cygwin.  You need to use the openssh 3.4p1-5 or the later.  It
-	is not known whether it can work properly with the previous
-	version.
-
-	
-3. Options of the win-ssh-agent
+5. Options of the win-ssh-agent.exe
 
 	--no-ssh-agent
 
@@ -72,13 +82,7 @@
 	--no-DISPLAY
 
 		It stops that the win-ssh-agent sets up automatically
-		the DISPLAY environment variable.  (see section 2)
-
-	--hide-console
-
-		It hides the console-window belonging to
-		win-ssh-agent.  It will appear again when the
-		win-ssh-agent was closed.
+		the DISPLAY environment variable.
 
 	-i, --identity FILENAME
 
@@ -92,7 +96,7 @@
 		a dialogue which asks the pass-phrase at the time of
 		start.  This option can be specified only once.
 
-		In the case of default, -I- is set up automatically.
+		In the case of default, -I - is set up automatically.
 		If - is specified as a FILENAME, the same identity
 		files are considerd to be specified as the ssh-add
 		with no-options uses.  (i.e. ~/.ssh/id_rsa,
@@ -100,7 +104,7 @@
 
 	--no-default-identity
 
-		It stops that -I- is set in the case of default.
+		It stops that -I - is set in the case of default.
 
 	-e, --exec PROGRAM [OPTION ...]
 
@@ -125,23 +129,23 @@
 		forever.
 
 
-4. Compile and Install
+6. Compile
 
-	The win-ssh-agent.exe and the win-ssh-askpass.exe should be in
-	the same directory.
 
 	The ssh-agent.exe and ssh-add.exe must be found in the path of
 	the PATH.
 
 	If you want to re-compile, please do make.
 
+	$ make && make install
 
-5. Support 
+
+7. Support 
 
 	https://github.com/ganaware/win-ssh-askpass
 
 
-6. Copyright
+8. Copyright
 
 	Copyright (c) 2001-2006, 2011, TAGA Nayuta <nayuta@ganaware.jp>
 	All rights reserved.
@@ -179,10 +183,22 @@
 	ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-7. History
+9. History
+
+	2011/10/?? 1.07
+		* --hide-console is removed.  If you use it, it is ignored.
+		* Now, win-ssh-agent.exe does not show a console window
+		  when it is executed by your double-click.
+		* Don't use openssh 5.9p1-1.  It's ssh-agent does not
+		  create a unix comain socket.	I think, this is a bug.
+		  Use another version such as 5.8p1-1 .
+		* README fix
+		* some fix
 
 	2011/10/14 1.06
-		* fix for cygwin 1.7
+		* Fix sources to build on Cygwin 1.7 .
+		* Now we use visual-style dialogbox.
+		* We use more Unicode API.
 
 	2006/04/02 1.05
 		* Now, win-ssh-agent set up an environment variable

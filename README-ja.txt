@@ -1,59 +1,69 @@
 
 
-		    win-ssh-agent, win-ssh-askpass
+		win-ssh-agent, win-ssh-askpass (for the cygwin openssh)
 
 
 1. はじめに
 
-	X を使用する場合、.xsession や .xinitrc で ssh-agent を起動し
-	ておけば、環境変数 SSH_AGENT_PID と SSH_AUTH_SOCK を全てのプロ
-	グラムが参照できるようになり、非常に便利です。
+	win-ssh-agent を使用すると、cygwin の openssh の ssh-agent をよ
+	りスマートに利用できるようになります。
 
-	ところが Windows の cygwin の openssh を使用している時に同様の
-	動作をさせようとしてもなかなかうまくいきません。ssh を使用する
-	可能性のある全てのプログラムを ssh-agent を使用した bash 経由
-	で起動するなどの方法をとらねばなりません。
+	通常 ssh-agent を利用するためには、ssh-agent を起動したシェル
+	(例: bash) からその他のプログラムを起動する必要があります。これ
+	は、ssh-agent が設定する環境変数 SSH_AUTH_SOCK を他のソフトウェ
+	アから参照できなければならないためです。
 
-	win-ssh-agent は、ssh-agent の環境変数 SSH_AGENT_PID と 
-	SSH_AUTH_SOCK を全てのプログラムが参照できるようにします。
+	win-ssh-agent は、ssh-agent が設定する環境変数を全てのプログラ
+	ムが参照できるようにしますので、特定のシェルから他のプログラム
+	を起動する必要がなくなります。
 
-	win-ssh-askpass は、X 用の ssh-askpass と同様の機能を提供しま
-	す。
 
-2. 動作
+2. インストール
 
-	win-ssh-agent.exe は起動された後、内部で勝手に ssh-agent.exe 
-	を起動します。そして、以下の環境変数の設定をします。
+	win-ssh-agent.exe と win-ssh-askpass.exe を同じディレクトリに置
+	いてください。(例: /usr/local/bin/ など)
 
-		SSH_AGENT_PID	ssh-agent.exe のプロセス ID。
-		SSH_AUTH_SOCK	ssh-agent.exe の認証用ソケットパス。
-		SSH_ASKPASS	win-ssh-askpass.exe のパス。
+	cygwin の openssh が必要です。動作確認は openssh 5.8p1-1 で行い
+	ました。
+	# 5.9p1-1 は openssh 自身のバグのため動作しません
+
+	Windows の環境変数 PATH に cygwin の /bin を追加してください。
+	(例: PATH=C:\cygwin\bin;...)
+
+
+3. 実行・終了
+
+	win-ssh-agent.exe をダブルクリックして起動してください。
+	
+	すると、パスフレーズを聞かれます。入力後、win-ssh-agent はタス
+	クバーの端の通知領域に常駐します。
+	
+	終了するには、通知領域内のアイコンを右クリックして Exit を選ん
+	でください。
+
+
+4. 動作解説
+
+	win-ssh-agent は起動された後、内部で勝手に ssh-agent を起動しま
+	す。そして、以下の環境変数の設定をします。
+
+		SSH_AGENT_PID	ssh-agent.exe のプロセス ID
+		SSH_AUTH_SOCK	ssh-agent.exe の認証用ソケットパス
+		SSH_ASKPASS	win-ssh-askpass.exe のパス
 		DISPLAY		:0
 
 	(※DISPLAY 環境変数が設定される条件は、既に DISPLAY 環境変数が
-	設定されておらず、かつ win-ssh-agent.exe を起動する時に 
+	設定されておらず、かつ win-ssh-agent を起動する時に
 	--no-DISPLAY オプションを指定しなかった場合のみです)
 
 	これらの設定は Explorer に対して行われ、以後 Explorer 経由で起
 	動する全てのアプリケーションはこれらの環境変数を継承します。
 
-	win-ssh-agent.exe はタスクトレイに常駐し、終了時にこれらの環境
-	変数を削除します。
-	
-
-	win-ssh-askpass.exe は、環境変数 DISPLAY と SSH_ASKPASS が適切
-	に設定されていると ssh-add.exe が win-ssh-askpass.exe を起動し
-	ます。この場合 X 用の ssh-askpass と同様に、パスフレーズを入力
-	するように促されます。
-	
-
-	openssh のツールを内部で使用するため、cygwin の /bin へパスが
-	とおっている必要があります。cygwin の openssh の 3.4p1-5 以降
-	を使用してください。それ以前のバージョンでも動作するかもしれま
-	せんが、わかりません。
+	win-ssh-agent はタスクバーの端の通知領域に常駐し、終了時にこれ
+	らの環境変数を削除します。
 
 
-3. win-ssh-agent のオプション
+5. win-ssh-agent.exe のオプション
 
 	--no-ssh-agent
 
@@ -63,12 +73,7 @@
 	--no-DISPLAY
 
 		DISPLAY 環境変数を win-ssh-agent が勝手に設定しない
-		ようにします。(2 章を参照)
-
-	--hide-console
-
-		win-ssh-agent が属しているコンソールウィンドウを隠しま
-		す。win-ssh-agent が終了すると、再び表示されます。
+		ようにします。
 
 	-i, --identity FILENAME
 
@@ -114,23 +119,17 @@
 		forever.
 
 
-4. コンパイル・インストール
+6. コンパイル
 
-	win-ssh-agent.exe と win-ssh-askpass.exe は同じディレクトリに
-	置いてください。
-
-	ssh-agent.exe と ssh-add.exe にパスが通っている必要があります。
-
-	自分で make する場合は、cygwin がインストールされた状態で make
-	してください。
+	$ make && make install
 
 
-5. サポート
+7. サポート
 
 	https://github.com/ganaware/win-ssh-askpass
 
 
-6. Copyright
+8. Copyright
 
 	Copyright (c) 2001-2006, 2011 TAGA Nayuta <nayuta@ganaware.jp>
 	All rights reserved.
@@ -168,10 +167,22 @@
 	ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-7. 履歴
+9. 履歴
+
+	2011/10/?? 1.07
+		* --hide-console オプションを削除。指定しても無視されます。
+		* win-ssh-agent.exe をダブルクリックして起動したときに、
+		  コンソールウィンドウを開かないように変更。
+		* openssh 5.9p1-1 の ssh-agent は通信用の unix domain socket
+		  の作成に失敗するようなので、動作しません。
+		  他のバージョンを使用してください。(5.8p1-1 で動作確認済み)
+		* README の修正
+		* 細かな修正
 
 	2011/10/14 1.06
-		* cygwin 1.7 用の修正
+		* Cygwin 1.7 環境でビルドできなくなっていたので修正しました
+		* Visualスタイルのダイアログボックスを使用するようになりました
+		* Unicode API を積極的に使うようにしました
 
 	2006/04/02 1.05
 		* DISPLAY 環境変数に設定する値を :0 にした。(以前は 
