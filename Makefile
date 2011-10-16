@@ -27,7 +27,7 @@ install:	win-ssh-agent win-ssh-askpass
 distrib:	all
 	strip win-ssh-agent.exe
 	strip win-ssh-askpass.exe
-	tar cvzfC win-ssh-askpass-1.06.tgz	..	\
+	tar cvzfC win-ssh-askpass-1.07.tgz	..	\
 		win-ssh-askpass/.gitignore			\
 		win-ssh-askpass/Makefile			\
 		win-ssh-askpass/README-ja.txt		\
