@@ -1,3 +1,4 @@
+// -*- tab-width: 8; -*-
 #include "misc.h"
 #include <sys/cygwin.h>
 

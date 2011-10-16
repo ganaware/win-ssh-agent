@@ -1,3 +1,4 @@
+// -*- tab-width: 8; -*-
 #include <stdio.h>
 #include <string>
 #include <locale.h>

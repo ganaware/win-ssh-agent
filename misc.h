@@ -1,3 +1,4 @@
+// -*- tab-width: 8; -*-
 #ifndef MISC_H_
 #  define MISC_H_
 
