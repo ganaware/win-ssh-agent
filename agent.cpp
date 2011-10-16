@@ -26,7 +26,6 @@ static const char *g_option_bindAddress = NULL;	// -a
 static const char *g_option_lifetime = NULL;	// -t
 static bool g_option_DISPLAY = true;		// --DISPLAY, --no-DISPLAY
 static char **g_option_execArgs = NULL;		// --exec
-static bool g_option_hideConsole = false;	// --hide-console
 #ifdef DEBUG_STDOUT
 static bool g_option_verbose = true;		// always verbose
 #else
@@ -153,7 +152,7 @@ bool checkOptions(int i_argc, char **i_argv)
     else if (a == "--no-DISPLAY")
       g_option_DISPLAY = false;
     else if (a == "--hide-console")
-      g_option_hideConsole = true;
+      ;					// ignore
     else if (a == "--verbose")
       g_option_verbose = true;
     else if (i + 1 < i_argc)
@@ -457,23 +456,6 @@ int main(int i_argc, char **i_argv)
       return 1;
     }
 
-    // hide console
-    HWND hwndConsole = NULL;
-    if (g_option_hideConsole)
-    {
-      wchar_t buf[1024];
-      GetConsoleTitleW(buf, NUMBER_OF(buf));
-      SetConsoleTitleW(GUID);
-      for (int i = 0; !hwndConsole && i < 256; ++ i)
-      {
-	Sleep(100);
-        hwndConsole = FindWindowExW(NULL, NULL, NULL, GUID);
-      }
-      SetConsoleTitleW(buf);
-      if (hwndConsole)
-	ShowWindow(hwndConsole, SW_HIDE);
-    }
-    
     bool hasDISPLAY = !!getenv("DISPLAY");
     if (hasDISPLAY)
       verbose("DISPLAY=%s\n", getenv("DISPLAY"));
@@ -532,9 +514,6 @@ int main(int i_argc, char **i_argv)
 
     CloseHandle(mutex);
 
-    if (hwndConsole)
-      ShowWindow(hwndConsole, SW_SHOW);
-    
     return 0;
   }
 
