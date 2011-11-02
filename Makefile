@@ -1,4 +1,7 @@
-DISTRIB = win-ssh-agent-1.07.tgz
+MAJOR_VERSION = 1
+MINOR_VERSION = 7
+
+DISTRIB = win-ssh-agent-$(shell printf %d.%02d $(MAJOR_VERSION) $(MINOR_VERSION)).tgz
 
 all:	win-ssh-agent win-ssh-askpass
 
@@ -29,6 +32,7 @@ install:	win-ssh-agent win-ssh-askpass
 distrib:	all
 	strip win-ssh-agent.exe
 	strip win-ssh-askpass.exe
+	./check_dist_ver.rb $(MAJOR_VERSION) $(MINOR_VERSION)
 	tar cvzfC $(DISTRIB)	..					\
 		win-ssh-agent/.gitignore				\
 		win-ssh-agent/Makefile					\
@@ -44,6 +48,7 @@ distrib:	all
 		win-ssh-agent/askpass.manifest			\
 		win-ssh-agent/askpass.rc				\
 		win-ssh-agent/askpassrc.h				\
+		win-ssh-agent/check_dist_ver.rb			\
 		win-ssh-agent/misc.cpp					\
 		win-ssh-agent/misc.h					\
 		win-ssh-agent/win-ssh-agent.exe			\
