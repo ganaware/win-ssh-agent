@@ -126,7 +126,7 @@
 
 7. サポート
 
-	https://github.com/ganaware/win-ssh-askpass
+	https://github.com/ganaware/win-ssh-agent
 
 
 8. Copyright
@@ -170,6 +170,7 @@
 9. 履歴
 
 	2011/10/?? 1.07
+		* プロジェクト名を win-ssh-askpass から win-ssh-agent へ変更。
 		* --hide-console オプションを削除。指定しても無視されます。
 		* win-ssh-agent.exe をダブルクリックして起動したときに、
 		  コンソールウィンドウを開かないように変更。

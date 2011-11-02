@@ -142,7 +142,7 @@
 
 7. Support 
 
-	https://github.com/ganaware/win-ssh-askpass
+	https://github.com/ganaware/win-ssh-agent
 
 
 8. Copyright
@@ -186,6 +186,7 @@
 9. History
 
 	2011/10/?? 1.07
+		* This project is renamed to win-ssh-agent from win-ssh-askpass.
 		* --hide-console is removed.  If you use it, it is ignored.
 		* Now, win-ssh-agent.exe does not show a console window
 		  when it is executed by your double-click.

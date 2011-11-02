@@ -1,3 +1,5 @@
+DISTRIB = win-ssh-agent-1.07.tgz
+
 all:	win-ssh-agent win-ssh-askpass
 
 CXXFLAGS = -Wall -O2
@@ -27,25 +29,25 @@ install:	win-ssh-agent win-ssh-askpass
 distrib:	all
 	strip win-ssh-agent.exe
 	strip win-ssh-askpass.exe
-	tar cvzfC win-ssh-askpass-1.07.tgz	..	\
-		win-ssh-askpass/.gitignore			\
-		win-ssh-askpass/Makefile			\
-		win-ssh-askpass/README-ja.txt		\
-		win-ssh-askpass/README.txt			\
-		win-ssh-askpass/agent.cpp			\
-		win-ssh-askpass/agent.ico			\
-		win-ssh-askpass/agent.manifest		\
-		win-ssh-askpass/agent.rc			\
-		win-ssh-askpass/agentrc.h			\
-		win-ssh-askpass/askpass.cpp		\
-		win-ssh-askpass/askpass.ico		\
-		win-ssh-askpass/askpass.manifest	\
-		win-ssh-askpass/askpass.rc			\
-		win-ssh-askpass/askpassrc.h		\
-		win-ssh-askpass/misc.cpp			\
-		win-ssh-askpass/misc.h				\
-		win-ssh-askpass/win-ssh-agent.exe	\
-		win-ssh-askpass/win-ssh-askpass.exe
+	tar cvzfC $(DISTRIB)	..					\
+		win-ssh-agent/.gitignore				\
+		win-ssh-agent/Makefile					\
+		win-ssh-agent/README-ja.txt				\
+		win-ssh-agent/README.txt				\
+		win-ssh-agent/agent.cpp					\
+		win-ssh-agent/agent.ico					\
+		win-ssh-agent/agent.manifest			\
+		win-ssh-agent/agent.rc					\
+		win-ssh-agent/agentrc.h					\
+		win-ssh-agent/askpass.cpp				\
+		win-ssh-agent/askpass.ico				\
+		win-ssh-agent/askpass.manifest			\
+		win-ssh-agent/askpass.rc				\
+		win-ssh-agent/askpassrc.h				\
+		win-ssh-agent/misc.cpp					\
+		win-ssh-agent/misc.h					\
+		win-ssh-agent/win-ssh-agent.exe			\
+		win-ssh-agent/win-ssh-askpass.exe
 
 clean:
 	-$(RM) win-ssh-askpass.exe win-ssh-agent.exe
