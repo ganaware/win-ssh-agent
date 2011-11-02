@@ -44,8 +44,8 @@ TARGET.each{|filename, desc|
           if value != desc[:match]
             print "error: #{filename}: #{desc[:line]} is #{value} (expected #{desc[:match]})\n"
             have_error = true
-            break
           end
+          break
         end
       }
     }

@@ -182,7 +182,7 @@
 
 9. History
 
-	2011/10/?? 1.07
+	2011/11/02 1.07
 		* This project is renamed to win-ssh-agent from win-ssh-askpass.
 		* --hide-console is removed.  If you use it, it is ignored.
 		* Now, win-ssh-agent.exe does not show a console window
