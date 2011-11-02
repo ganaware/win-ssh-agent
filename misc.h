@@ -47,4 +47,14 @@ std::wstring conv_path_posix_to_win(const std::string &i_src);
 bool s_to_ws(std::wstring *o_dst, const std::string &i_src);
 std::wstring to_wstring(const std::string &i_src);
 
+// noncopyable
+class noncopyable {
+protected:
+  noncopyable() { }
+  ~noncopyable() { }
+private:
+  noncopyable(const noncopyable &);
+  noncopyable &operator=(const noncopyable &);
+};
+
 #endif // !MISC_H_

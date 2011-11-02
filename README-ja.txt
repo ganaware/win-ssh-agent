@@ -23,9 +23,8 @@
 	win-ssh-agent.exe と win-ssh-askpass.exe を同じディレクトリに置
 	いてください。(例: /usr/local/bin/ など)
 
-	cygwin の openssh が必要です。動作確認は openssh 5.8p1-1 で行い
+	cygwin の openssh が必要です。動作確認は openssh 5.9p1-1 で行い
 	ました。
-	# 5.9p1-1 は openssh 自身のバグのため動作しません
 
 	Windows の環境変数 PATH に cygwin の /bin を追加してください。
 	(例: PATH=C:\cygwin\bin;...)
@@ -174,9 +173,7 @@
 		* --hide-console オプションを削除。指定しても無視されます。
 		* win-ssh-agent.exe をダブルクリックして起動したときに、
 		  コンソールウィンドウを開かないように変更。
-		* openssh 5.9p1-1 の ssh-agent は通信用の unix domain socket
-		  の作成に失敗するようなので、動作しません。
-		  他のバージョンを使用してください。(5.8p1-1 で動作確認済み)
+		* openssh 5.9p1-1 のバグを回避するために、内部構造を変更
 		* README の修正
 		* 細かな修正
 

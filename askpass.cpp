@@ -6,7 +6,7 @@
 #include "askpassrc.h"
 
 //
-class DialogPassphrase
+class DialogPassphrase : private noncopyable
 {
   HWND m_hwnd;					// HWND of dialog box
   std::wstring m_prompt;			// prompt

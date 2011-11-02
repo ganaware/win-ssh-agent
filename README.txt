@@ -26,10 +26,7 @@
 	the same directory (e.g. /usr/local/bin/) .
 
 	Install the cygwin openssh by the cygwin setup.exe.
-	I confirmed that the openssh-5.8p1-1 worked properly.
-
-	# The openssh 5.9p1-1 does not work.  Its ssh-agent does not
-	# create the UNIX-domain socket.  I think it is a bug.
+	I confirmed that the openssh-5.9p1-1 worked properly.
 
 	The system wide PATH environment variable must have /bin of the
 	cygwin (e.g. PATH=C:\cygwin\bin;...)
@@ -190,9 +187,7 @@
 		* --hide-console is removed.  If you use it, it is ignored.
 		* Now, win-ssh-agent.exe does not show a console window
 		  when it is executed by your double-click.
-		* Don't use openssh 5.9p1-1.  It's ssh-agent does not
-		  create a unix comain socket.	I think, this is a bug.
-		  Use another version such as 5.8p1-1 .
+		* Workaround for openssh 5.9p1-1.
 		* README fix
 		* some fix
 
