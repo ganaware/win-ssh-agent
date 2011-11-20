@@ -1,4 +1,4 @@
-
+﻿
 
 		win-ssh-agent, win-ssh-askpass (for the cygwin openssh)
 
@@ -136,6 +136,12 @@
 
 	$ make && make install
 
+	NOTE:
+		If win-ssh-askpass.exe cannot run under Windows XP,
+		please try the following commandline:
+
+		$ make install-xp
+
 
 7. Support 
 
@@ -181,6 +187,11 @@
 
 
 9. History
+
+	2011/??/?? 1.08
+		* "make install-xp" is added to build a
+		  win-ssh-askpass.exe without visual-style dialogbox.
+		  (Thanks to Patrick Mézard)
 
 	2011/11/02 1.07
 		* This project is renamed to win-ssh-agent from win-ssh-askpass.

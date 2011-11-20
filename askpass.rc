@@ -20,4 +20,6 @@ BEGIN
 END
 
 IDI_ASK_PASS            ICON    DISCARDABLE     "askpass.ico"
+#ifndef WITHOUT_MANIFEST
 1                       RT_MANIFEST             "askpass.manifest"
+#endif // !WITHOUT_MANIFEST

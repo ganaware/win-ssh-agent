@@ -1,5 +1,5 @@
 MAJOR_VERSION = 1
-MINOR_VERSION = 7
+MINOR_VERSION = 8
 
 DISTRIB = win-ssh-agent-$(shell printf %d.%02d $(MAJOR_VERSION) $(MINOR_VERSION)).tgz
 
@@ -8,9 +8,12 @@ all:	win-ssh-agent win-ssh-askpass
 CXXFLAGS = -Wall -O2
 RC	= windres
 PREFIX	?= /usr/local/bin
+ifdef WITHOUT_MANIFEST
+RCFLAGS	= -DWITHOUT_MANIFEST
+endif
 
 %.res:	%.rc
-	$(RC) -i $< -O coff -o $@
+	$(RC) $(RCFLAGS) -i $< -O coff -o $@
 
 agent.o:	agent.cpp   agentrc.h   misc.h
 askpass.o:	askpass.cpp askpassrc.h misc.h
@@ -28,6 +31,9 @@ askpass.res:	askpass.rc askpassrc.h askpass.ico askpass.manifest
 install:	win-ssh-agent win-ssh-askpass
 	install -D -s win-ssh-agent $(PREFIX)/win-ssh-agent
 	install -D -s win-ssh-askpass $(PREFIX)/win-ssh-askpass
+
+install-xp:
+	$(MAKE) $(MAKEFLAGS) WITHOUT_MANIFEST=1 clean install
 
 distrib:	all
 	strip win-ssh-agent.exe
