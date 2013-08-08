@@ -20,10 +20,10 @@ askpass.o:	askpass.cpp askpassrc.h misc.h
 misc.o:	misc.cpp                misc.h
 
 win-ssh-agent:	agent.o agent.res misc.o
-	$(LINK.cpp) -mwindows -e _mainCRTStartup -o $@ $^
+	$(LINK.cpp) -mwindows -o $@ $^
 
 win-ssh-askpass:	askpass.o askpass.res misc.o
-	$(LINK.cpp) -mconsole -e _mainCRTStartup -o $@ $^
+	$(LINK.cpp) -mconsole -o $@ $^
 
 agent.res:		agent.rc   agentrc.h   agent.ico   agent.manifest
 askpass.res:	askpass.rc askpassrc.h askpass.ico askpass.manifest

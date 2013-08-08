@@ -23,11 +23,18 @@
 	win-ssh-agent.exe と win-ssh-askpass.exe を同じディレクトリに置
 	いてください。(例: /usr/local/bin/ など)
 
-	cygwin の openssh が必要です。動作確認は openssh 5.9p1-1 で行い
+		32bit 版の Cygwin の場合は付属の win-ssh-agent.exe と
+		win-ssh-askpass.exe を使用することができます。
+
+		64bit 版の Cygwin の場合は、ソースをコンパイルしなおす
+		必要があります。「6. コンパイル」の手順を行ってから、上
+		記手順を行ってください。
+
+	cygwin の openssh が必要です。動作確認は openssh 6.2p2-1 で行い
 	ました。
 
 	Windows の環境変数 PATH に cygwin の /bin を追加してください。
-	(例: PATH=C:\cygwin\bin;...)
+	(例: PATH=C:\cygwin\bin;... や PATH=C:\cygwin64\bin;...)
 
 
 3. 実行・終了
@@ -120,7 +127,7 @@
 
 6. コンパイル
 
-	$ make && make install
+	$ make clean && make && make install
 
 	NOTE:
 		もし XP 環境で win-ssh-askpass.exe がうまく動作しないよ
@@ -136,7 +143,7 @@
 
 8. Copyright
 
-	Copyright (c) 2001-2006, 2011 TAGA Nayuta <nayuta@ganaware.jp>
+	Copyright (c) 2001-2006, 2011, 2013 TAGA Nayuta <nayuta@ganaware.jp>
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or
@@ -174,12 +181,13 @@
 
 9. 履歴
 
-	2011/??/?? 1.08
+	2013/08/08 1.08
 		* make install-xp で Visual スタイルダイアログボックス
 		  を使用しない exe を作成するようにしました。Windows
 		  XP 環境で win-ssh-askpass.exe の起動に失敗するケース
 		  があるケースに対応するためです。
 		  (Thanks to Patrick Mézard)
+		* Cygwin 64-bit 用修正
 
 	2011/11/02 1.07
 		* プロジェクト名を win-ssh-askpass から win-ssh-agent へ変更。

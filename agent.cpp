@@ -212,7 +212,7 @@ void run_program(char **i_argv)
       ShellExecuteW(NULL, L"open", win32_pathname.c_str(), NULL,
 		    NULL, SW_SHOWDEFAULT);
   }
-  ULONG r = reinterpret_cast<ULONG>(result);
+  intptr_t r = reinterpret_cast<intptr_t>(result);
   if (r < 32) {
     std::wstring message;
     message += L"Failed to run: ";
@@ -226,7 +226,7 @@ void run_program(char **i_argv)
     wchar_t buf[BUFSIZE];
     swprintf(buf, BUFSIZE, L"%d", r);
     message += buf;
-    switch (reinterpret_cast<ULONG>(result)) {
+    switch (reinterpret_cast<intptr_t>(result)) {
 #define SHELL_EXECUTE_ERROR(name) case name: message += L" (" L## #name L")"; break
     SHELL_EXECUTE_ERROR(ERROR_FILE_NOT_FOUND);
     SHELL_EXECUTE_ERROR(ERROR_PATH_NOT_FOUND);
@@ -606,7 +606,7 @@ private:
   }
   
   void broadcast() {
-    DWORD returnValue;
+    DWORD_PTR returnValue;
     SendMessageTimeoutW(HWND_BROADCAST, WM_SETTINGCHANGE, 0,
 			reinterpret_cast<LPARAM>(L"Environment"),
 			SMTO_ABORTIFHUNG,

@@ -25,11 +25,19 @@
 	The win-ssh-agent.exe and the win-ssh-askpass.exe should be in
 	the same directory (e.g. /usr/local/bin/) .
 
+		For 32-bit Cygwin, you can use the attached
+		win-ssh-agent.exe and the attached
+		win-ssh-askpass.exe.
+
+		For 64-bit Cygwin, you need to compile sources.
+		Follow the section "6. Compile", then do the above
+		instruction.
+
 	Install the cygwin openssh by the cygwin setup.exe.
-	I confirmed that the openssh-5.9p1-1 worked properly.
+	I confirmed that the openssh-6.2p2-1 worked properly.
 
 	The system wide PATH environment variable must have /bin of the
-	cygwin (e.g. PATH=C:\cygwin\bin;...)
+	cygwin (e.g. PATH=C:\cygwin\bin;... or PATH=C:\cygwin64\bin;...)
 
 
 3. Run and Terminate
@@ -134,7 +142,7 @@
 
 	If you want to re-compile, please do make.
 
-	$ make && make install
+	$ make clean && make && make install
 
 	NOTE:
 		If win-ssh-askpass.exe cannot run under Windows XP,
@@ -150,7 +158,7 @@
 
 8. Copyright
 
-	Copyright (c) 2001-2006, 2011, TAGA Nayuta <nayuta@ganaware.jp>
+	Copyright (c) 2001-2006, 2011, 2013, TAGA Nayuta <nayuta@ganaware.jp>
 	All rights reserved.
 
 	Redistribution and use in source and binary forms, with or
@@ -188,10 +196,11 @@
 
 9. History
 
-	2011/??/?? 1.08
+	2013/08/08 1.08
 		* "make install-xp" is added to build a
 		  win-ssh-askpass.exe without visual-style dialogbox.
 		  (Thanks to Patrick Mézard)
+		* Fixed for Cygwin 64-bit.
 
 	2011/11/02 1.07
 		* This project is renamed to win-ssh-agent from win-ssh-askpass.

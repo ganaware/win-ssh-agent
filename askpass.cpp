@@ -13,18 +13,18 @@ class DialogPassphrase : private noncopyable
   std::wstring m_passPhrase;			// result
   
 private:
-  static BOOL CALLBACK dlgProc(HWND i_hwnd, UINT i_message,
-			       WPARAM i_wParam, LPARAM i_lParam)
+  static INT_PTR CALLBACK dlgProc(HWND i_hwnd, UINT i_message,
+				  WPARAM i_wParam, LPARAM i_lParam)
   {
     DialogPassphrase *This =
       reinterpret_cast<DialogPassphrase *>(
-	GetWindowLongW(i_hwnd, GWL_USERDATA));
+	GetWindowLongPtrW(i_hwnd, GWLP_USERDATA));
     if (!This)
       switch (i_message)
       {
 	case WM_INITDIALOG:
 	  This = reinterpret_cast<DialogPassphrase *>(i_lParam);
-	  SetWindowLongW(i_hwnd, GWL_USERDATA, i_lParam);
+	  SetWindowLongPtrW(i_hwnd, GWLP_USERDATA, i_lParam);
 	  This->initialize(i_hwnd);
 	  return This->wmInitDialog(reinterpret_cast<HWND>(i_wParam));
       }
