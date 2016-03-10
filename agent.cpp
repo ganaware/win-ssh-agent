@@ -339,7 +339,7 @@ private:
     wc.style         = 0;
     wc.lpfnWndProc   = wndProc;
     wc.cbClsExtra    = 0;
-    wc.cbWndExtra    = sizeof(TaskTray *);
+    wc.cbWndExtra    = sizeof(LONG_PTR);
     wc.hInstance     = g_hInst;
     wc.hIcon         = NULL;
     wc.hCursor       = NULL;
@@ -353,7 +353,7 @@ private:
   static LRESULT CALLBACK
   wndProc(HWND i_hwnd, UINT i_message, WPARAM i_wParam, LPARAM i_lParam)
   {
-    TaskTray *This = reinterpret_cast<TaskTray *>(GetWindowLong(i_hwnd, 0));
+    TaskTray *This = reinterpret_cast<TaskTray *>(GetWindowLongPtrW(i_hwnd, 0));
 
     if (!This)
       switch (i_message)
@@ -361,7 +361,7 @@ private:
 	case WM_CREATE:
 	  This = reinterpret_cast<TaskTray *>(
 	    reinterpret_cast<CREATESTRUCTW *>(i_lParam)->lpCreateParams);
-	  SetWindowLongW(i_hwnd, 0, (long)This);
+	  SetWindowLongPtrW(i_hwnd, 0, reinterpret_cast<LONG_PTR>(This));
 	  return 0;
       }
     else

@@ -1,11 +1,11 @@
 MAJOR_VERSION = 1
-MINOR_VERSION = 8
+MINOR_VERSION = 9
 
 DISTRIB = win-ssh-agent-$(shell printf %d.%02d $(MAJOR_VERSION) $(MINOR_VERSION)).tgz
 
 all:	win-ssh-agent win-ssh-askpass
 
-CXXFLAGS = -Wall -O2
+CXXFLAGS = -Wall -O2 -g
 RC	= windres
 PREFIX	?= /usr/local/bin
 ifdef WITHOUT_MANIFEST
@@ -20,10 +20,10 @@ askpass.o:	askpass.cpp askpassrc.h misc.h
 misc.o:	misc.cpp                misc.h
 
 win-ssh-agent:	agent.o agent.res misc.o
-	$(LINK.cpp) -mwindows -o $@ $^
+	$(LINK.cpp) -g -mwindows -o $@ $^
 
 win-ssh-askpass:	askpass.o askpass.res misc.o
-	$(LINK.cpp) -mconsole -o $@ $^
+	$(LINK.cpp) -g -mconsole -o $@ $^
 
 agent.res:		agent.rc   agentrc.h   agent.ico   agent.manifest
 askpass.res:	askpass.rc askpassrc.h askpass.ico askpass.manifest

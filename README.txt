@@ -196,6 +196,9 @@
 
 9. History
 
+	2016/03/10 1.09
+		* Fixed for Cygwin 64-bit.
+
 	2013/08/08 1.08
 		* "make install-xp" is added to build a
 		  win-ssh-askpass.exe without visual-style dialogbox.
