@@ -1,5 +1,5 @@
 MAJOR_VERSION = 1
-MINOR_VERSION = 9
+MINOR_VERSION = 10
 
 DISTRIB = win-ssh-agent-$(shell printf %d.%02d $(MAJOR_VERSION) $(MINOR_VERSION)).tgz
 

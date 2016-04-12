@@ -87,21 +87,37 @@
 		で identity ファイルを指定します。このオプションは複数
 		指定可能です。
 
+	-I, --default-identity -
+
+		win-ssh-agent 起動時にパスフレーズを問い合わせるダイア
+		ログを表示します。このオプションは一つしか指定できませ
+		ん。
+
+		ssh-add を引数なしで実行した場合と同じ identity ファイ
+		ルのパスフレーズを問い合わせます。
+		(~/.ssh/id_rsa, ~/.ssh/id_dsa,
+		~/.ssh/id_ecdsa, ~/.ssh/id_ed25519, ~/.ssh/identity)
+
+		このオプションはデフォルトで指定されています。
+
+		このオプションを指定した場合、-I FILENAME の効果は無効
+		になります。
+
 	-I, --default-identity FILENAME
 
 		-i と同じですが、win-ssh-agent 起動時にパスフレーズ
 		を問い合わせるダイアログを表示します。このオプションは
-		一つしか指定できません。
+		複数指定可能です。
 
-		デフォルトでは -I - が暗黙に指定されています。FILENAME 
-		として - を指定すると、ssh-add を引数なしで実行した場
-		合と同じファイル (~/.ssh/id_rsa, ~/.ssh/id_dsa,
-		~/.ssh/id_ecdsa, ~/.ssh/identity) を指定したことになり
+		このオプションを指定した場合、-I - の効果は無効になり
 		ます。
 
 	--no-default-identity
 
 		デフォルトで -I - が指定されないようにします。
+
+		このオプションを指定した場合、-I - , -I FILENAME の効
+		果は無効になります。
 
 	-e, --exec PROGRAM [OPTION ...]
 
@@ -180,6 +196,10 @@
 
 
 9. 履歴
+
+	2016/04/12 1.10
+		* -I FILENAME を複数指定可能に
+		* 細かな修正
 
 	2016/03/10 1.09
 		* Cygwin 64-bit 用修正

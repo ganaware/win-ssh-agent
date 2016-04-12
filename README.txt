@@ -95,21 +95,33 @@
 		identity file will be specified by this option.  This
 		option can be specified more more than once.
 
+	-I, --default-identity -
+
+		It shows dialogue which asks the pass-phrase at the time of
+		start.  This option can be specified only once.
+
+		The same identity files are considerd to be specified
+		as the ssh-add with no-options uses.
+		(i.e. ~/.ssh/id_rsa, ~/.ssh/id_dsa, ~/.ssh/id_ecdsa,
+		~/.ssh/id_ed25519, ~/.ssh/identity)
+
+		In the case of default, -I - is set up automatically.
+
+		This option invalidates -I FILENAME.
+
 	-I, --default-identity FILENAME
 
 		This option works almost as same as -i.  But, it shows
 		a dialogue which asks the pass-phrase at the time of
-		start.  This option can be specified only once.
+		start.  This option can be specified multiple times.
 
-		In the case of default, -I - is set up automatically.
-		If - is specified as a FILENAME, the same identity
-		files are considerd to be specified as the ssh-add
-		with no-options uses.  (i.e. ~/.ssh/id_rsa,
-		~/.ssh/id_dsa, ~/.ssh/id_ecdsa, ~/.ssh/identity)
+		This option invalidates -I -.
 
 	--no-default-identity
 
 		It stops that -I - is set in the case of default.
+
+		This option invalidates -I -, and -I FILENAME.
 
 	-e, --exec PROGRAM [OPTION ...]
 
@@ -195,6 +207,10 @@
 
 
 9. History
+
+	2016/04/12 1.10
+		* -I FILENAME can be specified multiple times.
+		* some fix
 
 	2016/03/10 1.09
 		* Fixed for Cygwin 64-bit.

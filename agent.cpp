@@ -10,6 +10,7 @@
 #include <stdarg.h>
 #include <errno.h>
 #include <locale.h>
+#include <vector>
 
 #include "agentrc.h"
 #include "misc.h"
@@ -19,7 +20,8 @@
 typedef std::list<const char *> IdentityFiles;
 
 static IdentityFiles g_option_identityFiles; // --identity, --default-identity
-static const char *g_option_defaultIdentityFile = ""; // --default-identity
+static IdentityFiles g_option_defaultIdentityFiles; // --default-identity
+static bool g_option_isDefaultIdentityFilesDefault = true; // -I -
 static const char *g_option_bindAddress = NULL;	// -a
 static const char *g_option_lifetime = NULL;	// -t
 static bool g_option_no_ssh_agent = false;	// --no-ssh-agent
@@ -132,7 +134,7 @@ std::string getAskpassPath()
 }
 
 // run ssh-add
-int run_ssh_add(const char *i_identityFile)
+int run_ssh_add(const IdentityFiles &i_identityFiles)
 {
   verbose("\n(run ssh-add)\n");
   pid_t childPID = fork();
@@ -143,10 +145,23 @@ int run_ssh_add(const char *i_identityFile)
     verbose("$ export SSH_ASKPASS=%s\n", getenv("SSH_ASKPASS"));
     setenv("DISPLAY", ":0", 0);
     verbose("$ export DISPLAY=%s\n", getenv("DISPLAY"));
-    verbose("$ ssh-add %s\n", i_identityFile ? i_identityFile : "");
-    if (i_identityFile && !i_identityFile[0])
-      i_identityFile = NULL;
-    execlp("ssh-add", "ssh-add", i_identityFile, NULL);
+    verbose("$ ssh-add");
+    typedef std::vector<char *> Argv;
+    Argv argv;
+    {
+      argv.resize(i_identityFiles.size() + 2);
+      argv[0] = const_cast<char *>("ssh-add");
+      argv[argv.size() - 1] = NULL;
+      int i = 1;
+      for (IdentityFiles::const_iterator itr = i_identityFiles.begin();
+	   itr != i_identityFiles.end(); ++ itr, ++ i)
+      {
+	argv[i] = const_cast<char *>(*itr);
+	verbose(" %s", *itr);
+      }
+    }
+    verbose("\n");
+    execvp("ssh-add", &argv[0]);
     
     std::wstring message(L"Failed to exec ssh-add.exe : \r\n");
     message += to_wstring(sys_errlist[errno]);
@@ -268,6 +283,11 @@ bool checkOptions(int i_argc, char **i_argv)
       ;					// ignore
     else if (a == "--verbose")
       g_option_verbose = true;
+    else if (a == "--no-default-identity")
+    {
+      g_option_defaultIdentityFiles.clear();
+      g_option_isDefaultIdentityFilesDefault = false;
+    }
     else if (i + 1 < i_argc)
     {
       if (a == "-i" || a == "--identity")
@@ -276,15 +296,17 @@ bool checkOptions(int i_argc, char **i_argv)
       {
 	++ i;
 	if (std::string(i_argv[i]) == "-")
-	  g_option_defaultIdentityFile = "";
+	{
+	  g_option_defaultIdentityFiles.clear();
+	  g_option_isDefaultIdentityFilesDefault = true;
+	}
 	else
 	{
 	  g_option_identityFiles.push_back(i_argv[i]);
-	  g_option_defaultIdentityFile = i_argv[i];
+	  g_option_defaultIdentityFiles.push_back(i_argv[i]);
+	  g_option_isDefaultIdentityFilesDefault = false;
 	}
       }
-      else if (a == "--no-default-identity")
-	g_option_defaultIdentityFile = NULL;
       else if (a == "-a")
 	g_option_bindAddress = i_argv[++ i];
       else if (a == "-t")
@@ -404,7 +426,7 @@ private:
 	    switch (id)
 	    {
 	      case ID_MENUITEM_Add:
-		run_ssh_add(NULL);
+		run_ssh_add(g_option_defaultIdentityFiles);
 		break;
 	      case ID_MENUITEM_Exit:
 		PostQuitMessage(0);
@@ -417,7 +439,9 @@ private:
 		  IdentityFiles::iterator itr = g_option_identityFiles.begin();
 		  for (int i = id - ID_MENUITEM_Add - 1; 0 < i; -- i)
 		    ++ itr;
-		  run_ssh_add(*itr);
+		  IdentityFiles identityFiles;
+		  identityFiles.push_back(*itr);
+		  run_ssh_add(identityFiles);
 		}
 		break;
 	    }
@@ -668,8 +692,9 @@ int main(int i_argc, char **i_argv)
   registoryEnvironment.broadcastSetenv();
 
   // run
-  if (g_option_defaultIdentityFile) {
-    int status = run_ssh_add(g_option_defaultIdentityFile);
+  if (g_option_defaultIdentityFiles.size() ||
+      g_option_isDefaultIdentityFilesDefault) {
+    int status = run_ssh_add(g_option_defaultIdentityFiles);
     if (g_option_execArgs && (status == 0)) {
       run_program(g_option_execArgs);
     }
